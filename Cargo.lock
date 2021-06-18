@@ -649,8 +649,7 @@ dependencies = [
 [[package]]
 name = "http"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "527e8c9ac747e28542699a951517aa9a6945af506cd1f2e1b53a576c17b6cc11"
+source = "git+https://github.com/edu-sync/http.git?branch=non-ascii#ef67320317f95b780c8d0a8e734c18adaff0cebf"
 dependencies = [
  "bytes",
  "fnv",

@@ -6,3 +6,6 @@ members = [
     "edu-ws",
     "edu-ws-derive",
 ]
+
+[patch.crates-io]
+http = { git = "https://github.com/edu-sync/http.git", branch = "non-ascii" }
