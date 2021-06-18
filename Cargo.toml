@@ -1,11 +1,13 @@
 [workspace]
-
 members = [
     "edu-sync",
     "edu-sync-cli",
     "edu-ws",
     "edu-ws-derive",
 ]
+
+[profile.release]
+lto = "thin"
 
 [patch.crates-io]
 http = { git = "https://github.com/edu-sync/http.git", branch = "non-ascii" }
