@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, macos-latest, windows-2019]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install packages (Ubuntu)
+      if: matrix.os == 'ubuntu-18.04'
+      run: |
+        sudo apt-get update
+        sudo apt-get install libdbus-1-dev
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+    - name: Build release binary
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release
+    - name: Strip release binary (Ubuntu and macOS)
+      if: matrix.os == 'ubuntu-18.04' || matrix.os == 'macos-latest'
+      run: strip "target/${{ matrix.target }}/release/edu-sync-cli"
+    - name: Rename binaries
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        cd target/release
+        if [ "${{ matrix.os }}" = "ubuntu-18.04" ]; then
+          BINARY=edu-sync-cli-$VERSION-linux
+          mv edu-sync-cli $BINARY
+        elif [ "${{ matrix.os }}" = "macos-latest" ]; then
+          BINARY=edu-sync-cli-$VERSION-macos
+          mv edu-sync-cli $BINARY
+        elif [ "${{ matrix.os }}" = "windows-2019" ]; then
+          BINARY=edu-sync-cli-$VERSION-win.exe
+          mv edu-sync-cli.exe $BINARY
+        else
+          exit 1
+        fi
+        echo "BINARY=target/release/$BINARY" >> $GITHUB_ENV
+    - name: Upload release archive
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ env.BINARY }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
