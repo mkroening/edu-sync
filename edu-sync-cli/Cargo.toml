@@ -1,0 +1,28 @@
+[package]
+name = "edu-sync-cli"
+version = "0.1.0"
+authors = ["Martin Kröning <mkroening@posteo.net>"]
+edition = "2018"
+description = "Moodle synchronization utility (CLI)."
+homepage = "https://edu-sync.org"
+repository = "https://github.com/edu-sync/edu-sync"
+license = "GPL-3.0-only"
+keywords = ["moodle", "synchronization", "download"]
+categories = ["command-line-utilities"]
+
+[dependencies]
+edu-sync = { path = "../edu-sync" }
+
+anyhow = "1.0"
+dialoguer = "0.8"
+env_logger = "0.8"
+futures-util = { version = "0.3", default-features = false }
+human-panic = "1.0"
+indicatif = "0.16"
+log = "0.4"
+structopt = "0.3"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
+url = "2.2"
+
+[profile.release]
+lto = "thin"

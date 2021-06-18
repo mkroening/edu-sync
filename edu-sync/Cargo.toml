@@ -1,0 +1,28 @@
+[package]
+name = "edu-sync"
+version = "0.1.0"
+authors = ["Martin Kröning <mkroening@posteo.net>"]
+edition = "2018"
+description = "Moodle synchronization library."
+homepage = "https://edu-sync.org"
+repository = "https://github.com/edu-sync/edu-sync"
+license = "GPL-3.0-only"
+keywords = ["moodle", "synchronization", "download"]
+categories = ["asynchronous", "web-programming"]
+
+[dependencies]
+edu-ws = { path = "../edu-ws" }
+
+directories = "3.0"
+filetime = "0.2"
+keyring = "0.10"
+lazy_static = "1.4"
+log = "0.4"
+regex = "1.5"
+reqwest = { version = "0.11", default-features = false, features = ["rustls-tls", "stream"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_with = "1.9"
+thiserror = "1.0"
+tokio = { version = "1", default-features = false, features = ["fs"] }
+toml = "0.5"
+url = "2.2"

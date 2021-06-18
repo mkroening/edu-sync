@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "edu-sync",
+    "edu-sync-cli",
+    "edu-ws",
+    "edu-ws-derive",
+]
