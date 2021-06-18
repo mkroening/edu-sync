@@ -33,6 +33,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Install libdbus
+        run: |
+          sudo apt-get update
+          sudo apt-get install libdbus-1-dev
       - uses: actions-rs/cargo@v1
         with:
           command: test
