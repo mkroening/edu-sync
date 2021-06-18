@@ -229,41 +229,44 @@ impl Syncer {
         );
 
         let joiner = task::spawn_blocking(move || multi_progress.join());
-        let downloads = download_tasks
-            .filter_map(|res| future::ready(res.map_err(|err| println!("{}", err)).ok()))
-            .filter_map(|res| future::ready(res.map_err(|err| println!("{}", err)).ok()))
-            .collect::<Vec<_>>()
-            .await;
+        let (file_downloads, content_downloads, size_progress, content_progress, size) =
+            download_tasks
+                .filter_map(|res| future::ready(res.map_err(|err| println!("{}", err)).ok()))
+                .filter_map(|res| future::ready(res.map_err(|err| println!("{}", err)).ok()))
+                .fold(
+                    (Vec::new(), Vec::new(), Vec::new(), Vec::new(), 0),
+                    |(
+                        mut file_downloads,
+                        mut content_downloads,
+                        mut size_progress,
+                        mut content_progress,
+                        size,
+                    ),
+                     mut download| async move {
+                        file_downloads.append(&mut download.file_downloads);
+                        content_downloads.append(&mut download.content_downloads);
+                        size_progress.push((download.download_progresses, download.size_progress));
+                        content_progress.push(download.content_progress);
+                        (
+                            file_downloads,
+                            content_downloads,
+                            size_progress,
+                            content_progress,
+                            size + download.size,
+                        )
+                    },
+                )
+                .await;
 
-        let mut file_downloadss = Vec::new();
-        let mut content_downloadss = Vec::new();
-        let mut size_progresss = Vec::new();
-        let mut content_progresss = Vec::new();
-        let mut sizze = 0;
-        for CourseDownloads {
-            mut file_downloads,
-            mut content_downloads,
-            download_progresses,
-            size_progress,
-            size,
-            content_progress,
-        } in downloads
-        {
-            file_downloadss.append(&mut file_downloads);
-            content_downloadss.append(&mut content_downloads);
-            size_progresss.push((download_progresses, size_progress));
-            content_progresss.push(content_progress);
-            sizze += size;
-        }
-        total_bar.set_length(sizze);
+        total_bar.set_length(size);
 
-        let size_progresses = size_progresss
+        let size_progresses = size_progress
             .iter()
             .map(|(_, bar)| bar)
             .cloned()
             .collect::<Vec<_>>();
 
-        let file_downloads = stream::iter(file_downloadss)
+        let file_downloads = stream::iter(file_downloads)
             .map(tokio::spawn)
             .buffer_unordered(self.parallel_downloads)
             .collect::<Vec<_>>();
@@ -273,7 +276,7 @@ impl Syncer {
             let mut timer = time::interval(Duration::from_millis(200));
             loop {
                 let mut total = 0;
-                for (progresses, size_progress) in &size_progresss {
+                for (progresses, size_progress) in &size_progress {
                     let progress = progresses
                         .iter()
                         .map(|progress| progress.load(Ordering::Relaxed))
@@ -286,7 +289,7 @@ impl Syncer {
             }
         });
 
-        let content_downloads = content_downloadss
+        let content_downloads = content_downloads
             .into_iter()
             .map(tokio::spawn)
             .collect::<Vec<_>>();
@@ -301,7 +304,7 @@ impl Syncer {
         for size_progress in size_progresses {
             size_progress.finish();
         }
-        for content_progress in content_progresss {
+        for content_progress in content_progress {
             content_progress.finish();
         }
         total_bar.finish();
