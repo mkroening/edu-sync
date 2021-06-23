@@ -37,9 +37,6 @@ jobs:
       with:
         command: build
         args: --release
-    - name: Strip release binary (Ubuntu and macOS)
-      if: matrix.os == 'ubuntu-18.04' || matrix.os == 'macos-latest'
-      run: strip "target/${{ matrix.target }}/release/edu-sync-cli"
     - name: Rename binaries
       run: |
         VERSION=${GITHUB_REF#refs/tags/}
