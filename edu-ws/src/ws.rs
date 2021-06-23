@@ -17,11 +17,14 @@ use crate::{
 #[serde(tag = "errorcode")]
 pub enum Error {
     #[error("{message}")]
-    #[serde(rename = "invalidtoken")]
-    InvalidToken { message: String },
+    #[serde(rename = "accessexception")]
+    AccessException { message: String },
     #[error("{message}")]
     #[serde(rename = "errorcoursecontextnotvalid")]
     CourseContextNotValid { message: String },
+    #[error("{message}")]
+    #[serde(rename = "invalidtoken")]
+    InvalidToken { message: String },
 }
 
 #[derive(Error, Debug)]

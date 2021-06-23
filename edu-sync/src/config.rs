@@ -124,7 +124,12 @@ impl Display for AccountConfig {
 }
 
 impl AccountConfig {
-    pub async fn new(site_url: Url, token: Token, path: PathBuf, lang: Option<String>) -> Self {
+    pub async fn new(
+        site_url: Url,
+        token: Token,
+        path: PathBuf,
+        lang: Option<String>,
+    ) -> Result<Self, ws::Error> {
         let ws_client = ws::Client::new(util::shared_http(), &site_url, token, lang.clone());
         let Info {
             site_url,
@@ -132,19 +137,22 @@ impl AccountConfig {
             full_name,
             site_name,
             ..
-        } = ws_client.get_info().await.unwrap();
+        } = ws_client.get_info().await.map_err(|err| match err {
+            ws::RequestError::WsError(err) => err,
+            ws::RequestError::HttpError(err) => Err(err).unwrap(),
+        })?;
         let id = Id {
             site_url,
             user_id,
             lang,
         };
-        Self {
+        Ok(Self {
             user: full_name,
             site: site_name,
             id,
             path,
             courses: CourseConfigs(BTreeMap::new()),
-        }
+        })
     }
 }
 

@@ -49,7 +49,7 @@ impl Subcommand {
                 .parse()?
         };
 
-        let account_config = AccountConfig::new(self.url, token, self.path, self.lang).await;
+        let account_config = AccountConfig::new(self.url, token, self.path, self.lang).await?;
         let account = Account::new(account_config.id.clone(), token);
         account.save_token().unwrap();
         let mut config = config_task.await??;
