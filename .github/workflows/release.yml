@@ -37,26 +37,32 @@ jobs:
       with:
         command: build
         args: --release
-    - name: Rename binaries
+    - name: Build archive
       run: |
         VERSION=${GITHUB_REF#refs/tags/}
-        cd target/release
+
         if [ "${{ matrix.os }}" = "ubuntu-18.04" ]; then
-          BINARY=edu-sync-cli-$VERSION-linux
-          mv edu-sync-cli $BINARY
+          staging=edu-sync-cli-$VERSION-linux
         elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-          BINARY=edu-sync-cli-$VERSION-macos
-          mv edu-sync-cli $BINARY
+          staging=edu-sync-cli-$VERSION-macos
         elif [ "${{ matrix.os }}" = "windows-2019" ]; then
-          BINARY=edu-sync-cli-$VERSION-win.exe
-          mv edu-sync-cli.exe $BINARY
-        else
-          exit 1
+          staging=edu-sync-cli-$VERSION-win
         fi
-        echo "BINARY=target/release/$BINARY" >> $GITHUB_ENV
+
+        mkdir $staging
+
+        if [ "${{ matrix.os }}" = "windows-2019" ]; then
+          mv target/release/edu-sync-cli.exe $staging
+          7z a $staging.zip $staging
+          echo "FILE=$staging.zip" >> $GITHUB_ENV
+        else
+          mv target/release/edu-sync-cli $staging
+          tar czf $staging.tar.gz $staging
+          echo "FILE=$staging.tar.gz" >> $GITHUB_ENV
+        fi
     - name: Upload release archive
       uses: softprops/action-gh-release@v1
       with:
-        files: ${{ env.BINARY }}
+        files: ${{ env.FILE }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
