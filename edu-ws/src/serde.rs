@@ -28,7 +28,6 @@ serde_conv!(
     }
 );
 
-#[allow(clippy::ptr_arg)]
 serde_with::serde_conv!(
     pub StringAsHtml,
     String,
