@@ -4,6 +4,7 @@
 #![warn(clippy::default_trait_access)]
 #![warn(clippy::inconsistent_struct_constructor)]
 #![warn(clippy::semicolon_if_nothing_returned)]
+#![deny(rustdoc::all)]
 
 pub mod ajax;
 pub mod response;

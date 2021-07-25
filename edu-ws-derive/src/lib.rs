@@ -4,6 +4,7 @@
 #![warn(clippy::default_trait_access)]
 #![warn(clippy::inconsistent_struct_constructor)]
 #![warn(clippy::semicolon_if_nothing_returned)]
+#![deny(rustdoc::all)]
 
 use quote::quote;
 use syn::{parse_macro_input, Data, DeriveInput, Fields, Ident, Type};
