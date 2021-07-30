@@ -87,7 +87,7 @@ pub struct OverviewFile {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use time::macros::date;
+    use time::macros::datetime;
 
     use super::*;
 
@@ -113,10 +113,10 @@ mod tests {
                 category: Some(1),
                 progress: Some(0.0),
                 completed: Some(false),
-                start_date: Some(date!(2002 - 08 - 20).midnight().assume_utc()),
-                end_date: Some(date!(2003 - 02 - 20).midnight().assume_utc()),
+                start_date: Some(datetime!(2002 - 08 - 20 0:00 UTC)),
+                end_date: Some(datetime!(2003 - 02 - 20 0:00 UTC)),
                 marker: Some(0),
-                last_access: Some(date!(2002 - 11 - 20).midnight().assume_utc()),
+                last_access: Some(datetime!(2002 - 11 - 20 0:00 UTC)),
                 favourite: Some(false),
                 hidden: Some(false),
                 overview_files: Some(Vec::new()),
@@ -196,7 +196,7 @@ mod tests {
                 path: Some(PathBuf::from("/")),
                 size: Some(4096),
                 url: Some("https://example.com/webservice/pluginfile.php/00001/course/overviewfiles/file.png".parse().unwrap()),
-                modified: Some(date!(2002-08-20).midnight().assume_utc()),
+                modified: Some(datetime!(2002-08-20 0:00 UTC)),
                 media_type: Some("image/png".to_string()),
                 external: Some(true),
                 repository_type: Some("repository_type".to_string())

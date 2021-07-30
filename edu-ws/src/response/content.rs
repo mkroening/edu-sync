@@ -187,7 +187,7 @@ pub struct ContentsInfo {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use time::macros::date;
+    use time::macros::datetime;
 
     use super::*;
 
@@ -338,7 +338,7 @@ mod tests {
         assert_eq!(
             CompletionData {
                 state: CompletionState::Incomplete,
-                time_completed: date!(2002 - 08 - 20).midnight().assume_utc(),
+                time_completed: datetime!(2002 - 08 - 20 0:00 UTC),
                 override_by: Some(1),
                 value_used: Some(false),
             },
@@ -352,7 +352,7 @@ mod tests {
         assert_eq!(
             CompletionData {
                 state: CompletionState::Incomplete,
-                time_completed: date!(2002 - 08 - 20).midnight().assume_utc(),
+                time_completed: datetime!(2002 - 08 - 20 0:00 UTC),
                 override_by: None,
                 value_used: None,
             },
@@ -374,8 +374,8 @@ mod tests {
                 size: 4096,
                 url: Some("https://example.com/".parse().unwrap()),
                 content: Some("content".to_string()),
-                created: Some(date!(2002 - 08 - 20).midnight().assume_utc()),
-                modified: date!(2002 - 11 - 20).midnight().assume_utc(),
+                created: Some(datetime!(2002 - 08 - 20 0:00 UTC)),
+                modified: datetime!(2002 - 11 - 20 0:00 UTC),
                 sortorder: Some(0),
                 media_type: Some("application/pdf".to_string()),
                 external_file: Some(false),
@@ -413,7 +413,7 @@ mod tests {
                 url: None,
                 content: None,
                 created: None,
-                modified: date!(2002 - 11 - 20).midnight().assume_utc(),
+                modified: datetime!(2002 - 11 - 20 0:00 UTC),
                 sortorder: None,
                 media_type: None,
                 external_file: None,
@@ -470,7 +470,7 @@ mod tests {
             ContentsInfo {
                 count: 2,
                 size: 8192,
-                modified: date!(2002 - 11 - 20).midnight().assume_utc(),
+                modified: datetime!(2002 - 11 - 20 0:00 UTC),
                 media_types: vec!["application/pdf".to_string(), "text/plain".to_string(),],
                 repository_type: Some("repository_type".to_string()),
             },
@@ -486,7 +486,7 @@ mod tests {
             ContentsInfo {
                 count: 2,
                 size: 8192,
-                modified: date!(2002 - 11 - 20).midnight().assume_utc(),
+                modified: datetime!(2002 - 11 - 20 0:00 UTC),
                 media_types: vec!["application/pdf".to_string(), "text/plain".to_string(),],
                 repository_type: None,
             },
