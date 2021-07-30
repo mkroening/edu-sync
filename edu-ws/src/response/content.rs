@@ -187,7 +187,7 @@ pub struct ContentsInfo {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use time::date;
+    use time::macros::date;
 
     use super::*;
 
