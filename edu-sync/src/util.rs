@@ -1,4 +1,4 @@
-use std::{borrow::Cow, ffi::OsStr, path::PathBuf};
+use std::{borrow::Cow, ffi::OsStr, mem, path::PathBuf};
 
 use directories::ProjectDirs;
 use lazy_static::lazy_static;
@@ -22,18 +22,15 @@ pub fn shared_http() -> reqwest::Client {
 }
 
 pub trait PathBufExt {
-    fn push_extension(&mut self, path: impl AsRef<OsStr>);
+    fn push_file_name_suffix(&mut self, path: impl AsRef<OsStr>);
 }
 
 impl PathBufExt for PathBuf {
-    fn push_extension(&mut self, extension: impl AsRef<OsStr>) {
-        if let Some(current) = self.extension() {
-            let mut current = current.to_os_string();
-            current.push(".");
-            current.push(extension);
-            self.set_extension(current);
-        } else {
-            self.set_extension(extension);
+    fn push_file_name_suffix(&mut self, suffix: impl AsRef<OsStr>) {
+        if self.file_name().is_some() {
+            let mut path = mem::take(self).into_os_string();
+            path.push(suffix);
+            *self = path.into();
         }
     }
 }
@@ -62,11 +59,11 @@ mod tests {
     #[test]
     fn push_extension_test() {
         let mut path = PathBuf::from("foo.rs");
-        path.push_extension("txt");
+        path.push_file_name_suffix(".txt");
         assert_eq!(path, PathBuf::from("foo.rs.txt"));
 
         let mut path = PathBuf::from("foo");
-        path.push_extension("txt");
+        path.push_file_name_suffix(".txt");
         assert_eq!(path, PathBuf::from("foo.txt"));
     }
 }

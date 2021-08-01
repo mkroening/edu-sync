@@ -53,7 +53,7 @@ impl Content {
             }
 
             if ws_content.ty == Type::Url {
-                path.push_extension("html");
+                path.push_file_name_suffix(".html");
             }
 
             path
@@ -227,7 +227,7 @@ pub struct CommonDownload {
 impl CommonDownload {
     fn new(dst_path: PathBuf, mtime: FileTime) -> Self {
         let mut dl_path = dst_path.clone();
-        dl_path.push_extension("tmp");
+        dl_path.push_file_name_suffix(".tmp");
         Self {
             dl_path,
             dst_path,
