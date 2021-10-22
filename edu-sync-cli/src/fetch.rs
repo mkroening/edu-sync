@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 use edu_sync::{account::Account, config::Config};
 use structopt::StructOpt;
 

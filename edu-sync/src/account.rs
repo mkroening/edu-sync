@@ -1,4 +1,4 @@
-use std::{convert::TryFrom, fmt, path::PathBuf};
+use std::{fmt, path::PathBuf};
 
 pub use edu_ws::token::Token;
 use edu_ws::{
