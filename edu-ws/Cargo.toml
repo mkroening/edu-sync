@@ -2,7 +2,7 @@
 name = "edu-ws"
 version = "0.1.1"
 authors = ["Martin Kröning <mkroening@posteo.net>"]
-edition = "2018"
+edition = "2021"
 description = "Moodle web service HTTP API wrapper."
 homepage = "https://edu-sync.org"
 repository = "https://github.com/edu-sync/edu-sync"
