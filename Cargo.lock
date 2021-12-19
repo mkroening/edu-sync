@@ -631,7 +631,7 @@ dependencies = [
 [[package]]
 name = "http"
 version = "0.2.4"
-source = "git+https://github.com/edu-sync/http.git?branch=non-ascii#ef67320317f95b780c8d0a8e734c18adaff0cebf"
+source = "git+https://github.com/mkroening/http.git?branch=non-ascii#ef67320317f95b780c8d0a8e734c18adaff0cebf"
 dependencies = [
  "bytes",
  "fnv",
