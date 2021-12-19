@@ -13,9 +13,9 @@ categories = ["asynchronous", "web-programming"]
 [dependencies]
 edu-ws = { path = "../edu-ws" }
 
-directories = "3.0"
+directories = "4.0"
 filetime = "0.2"
-keyring = "0.10"
+keyring = "1"
 lazy_static = "1.4"
 log = "0.4"
 regex = "1.5"

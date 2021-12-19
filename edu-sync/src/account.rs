@@ -10,7 +10,6 @@ use edu_ws::{
     },
     ws,
 };
-use keyring::{Keyring, KeyringError};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -71,8 +70,9 @@ impl Account {
         )
     }
 
-    pub fn save_token(&self) -> Result<(), KeyringError> {
-        Keyring::new(Self::SERVICE, &self.id.to_string()).set_password(&self.token.to_string())
+    pub fn save_token(&self) -> Result<(), keyring::Error> {
+        keyring::Entry::new(Self::SERVICE, &self.id.to_string())
+            .set_password(&self.token.to_string())
     }
 
     pub async fn get_courses(&self) -> ws::Result<Vec<Course>> {
@@ -118,10 +118,10 @@ impl Account {
 }
 
 impl TryFrom<Id> for Account {
-    type Error = KeyringError;
+    type Error = keyring::Error;
 
     fn try_from(id: Id) -> Result<Self, Self::Error> {
-        let token = Keyring::new(Self::SERVICE, &id.to_string())
+        let token = keyring::Entry::new(Self::SERVICE, &id.to_string())
             .get_password()?
             .parse()
             .expect("corrupt keyring entry");
