@@ -430,7 +430,7 @@ impl CourseDownload {
                         .unwrap();
                     content_progress.inc(1);
                     let path = file_download.path().display().to_string();
-                    content_progress.println(&path);
+                    content_progress.println(path);
                 }
             })
             .collect::<Vec<_>>();
@@ -447,13 +447,13 @@ impl CourseDownload {
                             url_download.run().await.unwrap();
                             content_progress.inc(1);
                             let path = url_download.path().display().to_string();
-                            content_progress.println(&path);
+                            content_progress.println(path);
                         }
                         Download::Content(mut content_download) => {
                             content_download.run().await.unwrap();
                             content_progress.inc(1);
                             let path = content_download.path().display().to_string();
-                            content_progress.println(&path);
+                            content_progress.println(path);
                         }
                     }
                 }
