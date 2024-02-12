@@ -2,6 +2,7 @@
 
 use std::{str, string::ToString};
 
+use base64::prelude::*;
 use edu_ws_derive::{DerefWrapper, FromWrapper, HexWrapper};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -61,7 +62,8 @@ impl SSOTokenBuilder {
         // Validation String Format: <SIGNATURE_HEX16>:::<TOKEN_HEX16>
         const VALIDATION_LEN: usize = 32 + ":::".len() + 32;
         let mut validation_bytes = [0_u8; VALIDATION_LEN];
-        base64::decode_config_slice(validation_token, base64::STANDARD, &mut validation_bytes)
+        BASE64_STANDARD
+            .decode_slice(validation_token, &mut validation_bytes)
             .or(Err(Error::InvalidTokenUrl))?;
         let validation_str = str::from_utf8(&validation_bytes).or(Err(Error::InvalidTokenUrl))?;
         let signature_hex = &validation_str[..32];

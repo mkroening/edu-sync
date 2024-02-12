@@ -23,7 +23,7 @@ time = { version = "0.3", features = ["serde"] }
 url = { version = "2.2", features = ["serde"] }
 
 # SSO
-base64 = "0.13"
+base64 = "0.21"
 hex = { version = "0.4", features = ["serde"] }
 md5 = "0.7"
 rand = "0.8"
