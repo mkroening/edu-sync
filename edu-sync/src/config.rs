@@ -139,7 +139,7 @@ impl AccountConfig {
             ..
         } = ws_client.get_info().await.map_err(|err| match err {
             ws::RequestError::WsError(err) => err,
-            ws::RequestError::HttpError(err) => Err(err).unwrap(),
+            ws::RequestError::HttpError(err) => panic!("{err:?}"),
         })?;
         let id = Id {
             site_url,
