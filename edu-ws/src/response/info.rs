@@ -1,7 +1,6 @@
 //! Response from `core_webservice_get_site_info`.
 
 use serde::Deserialize;
-use serde_repr::Deserialize_repr;
 use serde_with::{serde_as, NoneAsEmptyString};
 use url::Url;
 
@@ -48,7 +47,7 @@ pub struct Info {
     #[serde(rename = "usermaxuploadfilesize")]
     pub max_upload_file_size: Option<i64>,
     #[serde(rename = "userhomepage")]
-    pub user_homepage: Option<Homepage>,
+    pub user_homepage: Option<u64>,
     #[serde(rename = "siteid")]
     pub site_id: Option<u64>,
     #[serde(rename = "sitecalendartype")]
@@ -71,13 +70,6 @@ pub struct Feature {
     #[serde_as(as = "NumBool")]
     #[serde(rename = "value")]
     pub enabled: bool,
-}
-
-#[derive(Deserialize_repr, Copy, Clone, Debug, Eq, Hash, PartialEq)]
-#[repr(u8)]
-pub enum Homepage {
-    SiteHome = 0,
-    Dashboard = 1,
 }
 
 #[cfg(test)]
@@ -109,7 +101,7 @@ mod tests {
                 can_manage_own_files: Some(true),
                 user_quota: Some(0),
                 max_upload_file_size: Some(-1),
-                user_homepage: Some(Homepage::Dashboard),
+                user_homepage: Some(1),
                 site_id: Some(0),
                 site_calendar_type: Some("gregorian".into()),
                 user_calendar_type: Some("gregorian".into()),
