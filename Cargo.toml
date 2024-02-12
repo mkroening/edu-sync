@@ -5,6 +5,7 @@ members = [
     "edu-ws",
     "edu-ws-derive",
 ]
+resolver = "2"
 
 [profile.release]
 lto = "thin"
