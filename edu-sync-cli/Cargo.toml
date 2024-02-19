@@ -14,7 +14,7 @@ edu-sync = { path = "../edu-sync" }
 
 anyhow = "1.0"
 dialoguer = "0.9"
-env_logger = "0.9"
+env_logger = "0.11"
 futures-util = { version = "0.3", default-features = false, features = ["alloc"] }
 human-panic = "1.0"
 indicatif = "0.17"
