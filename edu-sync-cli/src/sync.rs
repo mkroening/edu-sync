@@ -102,7 +102,7 @@ impl Syncer {
         }
     }
 
-    async fn sync(self, no_confirm: bool) -> io::Result<()> {
+    async fn sync(self, no_confirm: bool) -> anyhow::Result<()> {
         if self.outdated_courses.is_empty() {
             println!("All resources are up to date.");
         } else {
