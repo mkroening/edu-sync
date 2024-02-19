@@ -14,7 +14,7 @@ edu-ws = { path = "../edu-ws" }
 
 directories = "4.0"
 filetime = "0.2"
-keyring = "1"
+keyring = "2"
 lazy_static = "1.4"
 log = "0.4"
 regex = "1.5"

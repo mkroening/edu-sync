@@ -71,7 +71,7 @@ impl Account {
     }
 
     pub fn save_token(&self) -> Result<(), keyring::Error> {
-        keyring::Entry::new(Self::SERVICE, &self.id.to_string())
+        keyring::Entry::new(Self::SERVICE, &self.id.to_string())?
             .set_password(&self.token.to_string())
     }
 
@@ -121,7 +121,7 @@ impl TryFrom<Id> for Account {
     type Error = keyring::Error;
 
     fn try_from(id: Id) -> Result<Self, Self::Error> {
-        let token = keyring::Entry::new(Self::SERVICE, &id.to_string())
+        let token = keyring::Entry::new(Self::SERVICE, &id.to_string())?
             .get_password()?
             .parse()
             .expect("corrupt keyring entry");
