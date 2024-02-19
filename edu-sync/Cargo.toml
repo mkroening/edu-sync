@@ -12,7 +12,7 @@ categories = ["asynchronous", "web-programming"]
 [dependencies]
 edu-ws = { path = "../edu-ws" }
 
-directories = "4.0"
+directories = "5"
 filetime = "0.2"
 keyring = "2"
 lazy_static = "1.4"
