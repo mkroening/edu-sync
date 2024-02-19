@@ -173,13 +173,15 @@ impl Syncer {
 
     async fn download(self) -> io::Result<()> {
         let multi_progress = Arc::new(MultiProgress::new());
-        let content_progress_style =
-            ProgressStyle::default_bar().template("[{pos}/{len}] {wide_msg}");
+        let content_progress_style = ProgressStyle::default_bar()
+            .template("[{pos}/{len}] {wide_msg}")
+            .unwrap();
         let size_progress_style = ProgressStyle::default_bar()
             .template(
                 "└──── {binary_bytes:>9} / {binary_total_bytes:>9} [{bar:25}] \
                  {binary_bytes_per_sec:>11} in {elapsed:>3} ETA: {eta:>3}",
             )
+            .unwrap()
             .progress_chars("=> ");
 
         let multi_progress_clone = multi_progress.clone();
@@ -223,11 +225,11 @@ impl Syncer {
                         "Total {binary_bytes:>9} / {binary_total_bytes:>9} [{bar:25}] \
                          {binary_bytes_per_sec:>11} in {elapsed:>3} ETA: {eta:>3}",
                     )
+                    .unwrap()
                     .progress_chars("=> "),
             ),
         );
 
-        let joiner = task::spawn_blocking(move || multi_progress.join());
         let (file_downloads, content_downloads, size_progress, content_progress, size) =
             download_tasks
                 .filter_map(|res| future::ready(res.map_err(|err| println!("{}", err)).ok()))
@@ -307,8 +309,6 @@ impl Syncer {
             content_progress.finish();
         }
         total_bar.finish();
-
-        joiner.await??;
 
         Ok(())
     }
