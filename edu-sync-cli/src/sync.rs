@@ -64,24 +64,24 @@ impl Syncer {
         let outdated_courses = config
             .accounts
             .into_iter()
-            .filter_map(|(account_name, account_config)| {
+            .flat_map(|(_account_name, account_config)| {
                 let AccountConfig {
-                    id, path, courses, ..
+                    path,
+                    courses,
+                    id,
+                    token,
+                    ..
                 } = account_config;
-                Account::try_from(id)
-                    .map(|account| (account, path, courses.0))
-                    .map_err(|err| println!("Could not get password for {}: {}", account_name, err))
-                    .ok()
-            })
-            .flat_map(|(account, account_path, courses)| {
+                let account = Account::new(id, token);
                 let account = Arc::new(account);
                 courses
+                    .0
                     .into_iter()
                     .rev()
                     .filter(|(_, course_config)| course_config.sync)
                     .map(move |(course_id, course_config)| {
                         let course_path =
-                            account_path.join(course_config.name_as_path_component().as_ref());
+                            path.join(course_config.name_as_path_component().as_ref());
                         (account.clone(), course_id, course_config.name, course_path)
                     })
             })

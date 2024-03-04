@@ -112,6 +112,7 @@ pub struct AccountConfig {
     pub site: String,
     #[serde(flatten)]
     pub id: Id,
+    pub token: Token,
     pub path: PathBuf,
     #[serde(default)]
     pub courses: CourseConfigs,
@@ -150,6 +151,7 @@ impl AccountConfig {
             user: full_name,
             site: site_name,
             id,
+            token,
             path,
             courses: CourseConfigs(BTreeMap::new()),
         })

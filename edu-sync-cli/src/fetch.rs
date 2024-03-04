@@ -15,14 +15,8 @@ impl Subcommand {
             let results = config
                 .accounts
                 .values_mut()
-                .filter_map(|account_config| {
-                    let id = account_config.id.clone();
-                    Account::try_from(id.clone())
-                        .map(|account| (account_config, account))
-                        .map_err(|err| println!("Error retrieving the token for {}: {}", id, err))
-                        .ok()
-                })
-                .map(|(account_config, account)| {
+                .map(|account_config| {
+                    let account = Account::new(account_config.id.clone(), account_config.token);
                     let courses = tokio::spawn(async move { account.get_courses().await });
                     (account_config, courses)
                 })

@@ -22,7 +22,7 @@ pub struct Subcommand {
     /// settings as the security key for the Moodle mobile web service. If you
     /// cannot find it, make sure that your Moodle instance supports the Moodle
     /// mobile web service, which is also required for the official Moodle app.
-    /// The token is being saved your operating system's keyring.
+    /// The token is being saved your config file.
     #[structopt(short, long)]
     username: Option<String>,
     /// A language to force for resource retrieval.
@@ -50,8 +50,6 @@ impl Subcommand {
         };
 
         let account_config = AccountConfig::new(self.url, token, self.path, self.lang).await?;
-        let account = Account::new(account_config.id.clone(), token);
-        account.save_token().unwrap();
         let mut config = config_task.await??;
         let account_name = account_config.to_string();
         config

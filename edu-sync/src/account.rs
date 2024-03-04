@@ -39,8 +39,6 @@ pub struct Account {
 }
 
 impl Account {
-    const SERVICE: &'static str = "edu-sync";
-
     pub async fn login(
         site_url: &Url,
         username: &str,
@@ -68,11 +66,6 @@ impl Account {
             self.token,
             self.id.lang.clone(),
         )
-    }
-
-    pub fn save_token(&self) -> Result<(), keyring::Error> {
-        keyring::Entry::new(Self::SERVICE, &self.id.to_string())?
-            .set_password(&self.token.to_string())
     }
 
     pub async fn get_courses(&self) -> ws::Result<Vec<Course>> {
@@ -114,18 +107,6 @@ impl Account {
                     .into_iter()
                     .map(move |content| Content::new(content, dir.clone()))
             })
-    }
-}
-
-impl TryFrom<Id> for Account {
-    type Error = keyring::Error;
-
-    fn try_from(id: Id) -> Result<Self, Self::Error> {
-        let token = keyring::Entry::new(Self::SERVICE, &id.to_string())?
-            .get_password()?
-            .parse()
-            .expect("corrupt keyring entry");
-        Ok(Self { id, token })
     }
 }
 
