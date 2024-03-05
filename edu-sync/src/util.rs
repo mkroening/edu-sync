@@ -1,24 +1,21 @@
-use std::{borrow::Cow, ffi::OsStr, mem, path::PathBuf};
+use std::{borrow::Cow, ffi::OsStr, mem, path::PathBuf, sync::OnceLock};
 
 use directories::ProjectDirs;
-use lazy_static::lazy_static;
 use regex::{NoExpand, Regex};
 
 pub fn project_dirs() -> &'static ProjectDirs {
-    lazy_static! {
-        static ref PROJECT_DIRS: ProjectDirs = ProjectDirs::from("org", "Edu Sync", "Edu Sync")
-            .expect("no valid home directory path could be retrieved from the operating system");
-    }
+    static PROJECT_DIRS: OnceLock<ProjectDirs> = OnceLock::new();
 
-    &PROJECT_DIRS
+    PROJECT_DIRS.get_or_init(|| {
+        ProjectDirs::from("org", "Edu Sync", "Edu Sync")
+            .expect("no valid home directory path could be retrieved from the operating system")
+    })
 }
 
 pub fn shared_http() -> reqwest::Client {
-    lazy_static! {
-        static ref SHARED: reqwest::Client = reqwest::Client::new();
-    }
+    static SHARED: OnceLock<reqwest::Client> = OnceLock::new();
 
-    SHARED.clone()
+    SHARED.get_or_init(reqwest::Client::new).clone()
 }
 
 fn split_file_at_dot(file: &OsStr) -> (&OsStr, Option<&OsStr>) {
@@ -75,11 +72,10 @@ impl PathBufExt for PathBuf {
 }
 
 pub fn sanitize_path_component(path_component: &str) -> Cow<'_, str> {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"[\\/]+|^\.\.??$").unwrap();
-    }
+    static RE: OnceLock<Regex> = OnceLock::new();
 
-    RE.replace_all(path_component, NoExpand("_"))
+    RE.get_or_init(|| Regex::new(r"[\\/]+|^\.\.??$").unwrap())
+        .replace_all(path_component, NoExpand("_"))
 }
 
 #[cfg(test)]

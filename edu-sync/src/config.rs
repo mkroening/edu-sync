@@ -5,6 +5,7 @@ use std::{
     fmt::{self, Display},
     io::{self, ErrorKind},
     path::{Path, PathBuf},
+    sync::OnceLock,
 };
 
 use edu_ws::{
@@ -12,7 +13,6 @@ use edu_ws::{
     token::Token,
     ws,
 };
-use lazy_static::lazy_static;
 use log::warn;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
@@ -169,16 +169,16 @@ pub struct Config {
 impl Config {
     #[must_use]
     pub fn path() -> &'static Path {
-        lazy_static! {
-            static ref CONFIG_PATH: PathBuf = {
+        static CONFIG_PATH: OnceLock<PathBuf> = OnceLock::new();
+
+        CONFIG_PATH
+            .get_or_init(|| {
                 let project_dirs = util::project_dirs();
                 let mut config_path = project_dirs.config_dir().join(project_dirs.project_path());
                 config_path.set_extension("toml");
                 config_path
-            };
-        }
-
-        CONFIG_PATH.as_path()
+            })
+            .as_path()
     }
 
     pub fn has_accounts(&self) -> bool {
