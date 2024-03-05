@@ -9,6 +9,3 @@ resolver = "2"
 
 [profile.release]
 lto = "thin"
-
-[patch.crates-io]
-http = { git = "https://github.com/mkroening/http.git", branch = "non-ascii" }
