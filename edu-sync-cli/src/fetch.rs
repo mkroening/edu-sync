@@ -1,10 +1,9 @@
-use clap::StructOpt;
 use edu_sync::{account::Account, config::Config};
 
 use crate::util;
 
 /// Updates the available courses in the configuration.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct Subcommand {}
 
 impl Subcommand {

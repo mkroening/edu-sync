@@ -1,8 +1,7 @@
-use clap::StructOpt;
 use edu_sync::config::Config;
 
 /// Prints the path of the configuration file.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct Subcommand {}
 
 impl Subcommand {

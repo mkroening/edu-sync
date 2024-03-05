@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use clap::StructOpt;
 use dialoguer::Password;
 use edu_sync::{
     account::Account,
@@ -10,7 +9,7 @@ use tokio::task;
 use url::Url;
 
 /// Adds a new account to the configuration.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct Subcommand {
     /// The username of the account.
     ///

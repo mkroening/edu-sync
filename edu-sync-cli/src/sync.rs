@@ -9,7 +9,6 @@ use std::{
     time::Duration,
 };
 
-use clap::StructOpt;
 use dialoguer::{
     console::{self, Alignment},
     Confirm,
@@ -31,11 +30,11 @@ use tokio::{task, time};
 use crate::util;
 
 /// Synchronizes available content from the configured courses.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct Subcommand {
     /// Bypass any and all “Are you sure?” messages. It’s not a good idea to do
     /// this unless you want to run edu-sync-cli from a script.
-    #[structopt(long)]
+    #[clap(long)]
     no_confirm: bool,
 }
 

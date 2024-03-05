@@ -12,11 +12,11 @@ mod fetch;
 mod sync;
 mod util;
 
-use clap::StructOpt;
+use clap::Parser;
 use human_panic::setup_panic;
 
-#[derive(Debug, StructOpt)]
-#[structopt(name = "Edu Sync", author, about)]
+#[derive(Debug, clap::Parser)]
+#[clap(name = "Edu Sync", author, about)]
 enum Subcommand {
     Add(add::Subcommand),
     Config(config::Subcommand),
