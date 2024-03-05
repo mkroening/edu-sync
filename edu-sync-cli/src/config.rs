@@ -1,5 +1,5 @@
+use clap::StructOpt;
 use edu_sync::config::Config;
-use structopt::StructOpt;
 
 /// Prints the path of the configuration file.
 #[derive(Debug, StructOpt)]

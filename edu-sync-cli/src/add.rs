@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
+use clap::StructOpt;
 use dialoguer::Password;
 use edu_sync::{
     account::Account,
     config::{AccountConfig, Config},
 };
-use structopt::StructOpt;
 use tokio::task;
 use url::Url;
 

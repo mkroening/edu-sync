@@ -12,8 +12,8 @@ mod fetch;
 mod sync;
 mod util;
 
+use clap::StructOpt;
 use human_panic::setup_panic;
-use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Edu Sync", author, about)]
@@ -40,5 +40,5 @@ async fn main() -> anyhow::Result<()> {
     env_logger::init();
     setup_panic!();
 
-    Subcommand::from_args().run().await
+    Subcommand::parse().run().await
 }

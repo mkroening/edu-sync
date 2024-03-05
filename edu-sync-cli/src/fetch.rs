@@ -1,5 +1,5 @@
+use clap::StructOpt;
 use edu_sync::{account::Account, config::Config};
-use structopt::StructOpt;
 
 use crate::util;
 

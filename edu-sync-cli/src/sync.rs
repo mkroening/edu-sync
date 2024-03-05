@@ -9,6 +9,7 @@ use std::{
     time::Duration,
 };
 
+use clap::StructOpt;
 use dialoguer::{
     console::{self, Alignment},
     Confirm,
@@ -25,7 +26,6 @@ use futures_util::{
 };
 use indicatif::{BinaryBytes, MultiProgress, ProgressBar, ProgressStyle};
 use log::{info, trace};
-use structopt::StructOpt;
 use tokio::{task, time};
 
 use crate::util;
