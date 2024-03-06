@@ -12,8 +12,11 @@ mod fetch;
 mod sync;
 mod util;
 
+use std::env;
+
 use clap::Parser;
 use human_panic::setup_panic;
+use tracing_subscriber::EnvFilter;
 
 #[derive(Debug, clap::Parser)]
 #[clap(name = "Edu Sync", author, about)]
@@ -37,7 +40,13 @@ impl Subcommand {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    env_logger::init();
+    let fmt = tracing_subscriber::fmt();
+    if env::var_os(EnvFilter::DEFAULT_ENV).is_some() {
+        fmt.with_env_filter(EnvFilter::try_from_default_env()?)
+            .init();
+    } else {
+        fmt.init();
+    }
     setup_panic!();
 
     Subcommand::parse().run().await

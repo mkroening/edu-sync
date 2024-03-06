@@ -24,8 +24,8 @@ use futures_util::{
     StreamExt,
 };
 use indicatif::{BinaryBytes, MultiProgress, ProgressBar, ProgressStyle};
-use log::{info, trace};
 use tokio::{task, time};
+use tracing::{info, trace};
 
 use crate::util;
 

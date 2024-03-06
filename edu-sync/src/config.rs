@@ -13,7 +13,6 @@ use edu_ws::{
     token::Token,
     ws,
 };
-use log::warn;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, serde_conv, DisplayFromStr};
@@ -22,6 +21,7 @@ use tokio::{
     fs::{self, File},
     io::AsyncWriteExt,
 };
+use tracing::warn;
 
 use crate::{account::Id, util};
 
