@@ -78,8 +78,7 @@ impl Account {
         course_id: u64,
         course_path: PathBuf,
     ) -> impl Iterator<Item = Content> {
-        let mut content = self
-            .ws_client()
+        self.ws_client()
             .get_contents(course_id)
             .await
             .unwrap()
@@ -108,11 +107,6 @@ impl Account {
                     .into_iter()
                     .map(move |content| Content::new(content, dir.clone()))
             })
-            .collect::<Vec<_>>();
-
-        Content::sanitize(&mut content).await;
-
-        content.into_iter()
     }
 }
 

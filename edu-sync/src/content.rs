@@ -1,6 +1,5 @@
 use std::{
     cmp::Ordering,
-    collections::HashMap,
     ffi::OsStr,
     path::{Path, PathBuf},
 };
@@ -106,36 +105,6 @@ impl Content {
             Some(Ordering::Less) => SyncStatus::Outdated(self.path),
             Some(Ordering::Equal) => SyncStatus::UpToDate(self.path),
             Some(Ordering::Greater) => SyncStatus::Modified(self.path),
-        }
-    }
-
-    pub async fn sanitize(contents: &mut [Content]) {
-        contents.sort_by_key(|content| content.ws_content.modified);
-
-        let mut occurrences = HashMap::new();
-        for content in contents.iter_mut() {
-            let count = *occurrences
-                .entry(content.path.clone())
-                .and_modify(|count| *count += 1)
-                .or_insert(1);
-            if count > 1 {
-                content.path.push_file_prefix_suffix(format!(" {count}"));
-            }
-        }
-
-        for content in contents.iter_mut() {
-            if occurrences
-                .get(&content.path)
-                .is_some_and(|count| *count > 1)
-            {
-                let old_path = content.path.clone();
-                content.path.push_file_prefix_suffix(" 1");
-                if let Err(err) = fs::rename(&old_path, &content.path).await {
-                    if err.kind() != io::ErrorKind::NotFound {
-                        panic!("{err:?}");
-                    }
-                }
-            }
         }
     }
 }
