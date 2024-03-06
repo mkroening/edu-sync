@@ -20,6 +20,7 @@ serde_repr = "0.1"
 serde_with = "3"
 thiserror = "1.0"
 time = { version = "0.3", features = ["serde"] }
+tracing = "0.1"
 url = { version = "2.2", features = ["serde"] }
 
 # SSO

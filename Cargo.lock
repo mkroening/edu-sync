@@ -383,6 +383,7 @@ dependencies = [
  "serde_with",
  "thiserror",
  "time",
+ "tracing",
  "url",
 ]
 

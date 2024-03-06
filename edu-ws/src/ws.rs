@@ -5,6 +5,7 @@ use std::result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_with::serde_as;
 use thiserror::Error;
+use tracing::{debug, error};
 use url::Url;
 
 use crate::{
@@ -33,6 +34,8 @@ pub enum RequestError {
     WsError(#[from] Error),
     #[error(transparent)]
     HttpError(#[from] reqwest::Error),
+    #[error(transparent)]
+    Decode(#[from] serde_json::Error),
 }
 
 pub type Result<T> = result::Result<T, RequestError>;
@@ -94,7 +97,7 @@ impl Client {
             lang: Option<&'a str>,
         }
 
-        let ret = self
+        let response = self
             .http_client
             .post(self.ws_url.clone())
             .query(&WsQuery {
@@ -109,8 +112,13 @@ impl Client {
             })
             .send()
             .await?
-            .json::<UntaggedResultHelper<T, Error>>()
-            .await?
+            .text()
+            .await
+            .unwrap();
+
+        let ret = serde_json::from_str::<'_, UntaggedResultHelper<T, Error>>(&response)
+            .inspect(|_| debug!(response))
+            .inspect_err(|err| error!(?err, response, "Could not deserialize response"))?
             .0?;
 
         Ok(ret)
