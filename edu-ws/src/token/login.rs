@@ -61,7 +61,8 @@ impl Client {
             service: &'a str,
         }
 
-        self.http_client
+        let response = self
+            .http_client
             .post(self.login_url.clone())
             .query(&LoginRequest {
                 username,
@@ -69,13 +70,12 @@ impl Client {
                 service: "moodle_mobile_app",
             })
             .send()
-            .await
-            .map_err(ReceiveError::HttpError)?
+            .await?
             .json::<UntaggedResultHelper<Response, Error>>()
-            .await
-            .map_err(ReceiveError::HttpError)?
-            .0
-            .map_err(ReceiveError::LoginRequestError)
+            .await?
+            .0?;
+
+        Ok(response)
     }
 }
 
@@ -83,8 +83,8 @@ impl Client {
 pub enum ReceiveError {
     #[error(transparent)]
     LoginRequestError(#[from] Error),
-    #[error("{0}")]
-    HttpError(reqwest::Error),
+    #[error(transparent)]
+    HttpError(#[from] reqwest::Error),
 }
 
 pub type Result<T> = result::Result<T, ReceiveError>;

@@ -31,8 +31,8 @@ pub enum Error {
 pub enum RequestError {
     #[error(transparent)]
     WsError(#[from] Error),
-    #[error("{0}")]
-    HttpError(reqwest::Error),
+    #[error(transparent)]
+    HttpError(#[from] reqwest::Error),
 }
 
 pub type Result<T> = result::Result<T, RequestError>;
@@ -94,7 +94,8 @@ impl Client {
             lang: Option<&'a str>,
         }
 
-        self.http_client
+        let ret = self
+            .http_client
             .post(self.ws_url.clone())
             .query(&WsQuery {
                 token: &self.token,
@@ -107,13 +108,12 @@ impl Client {
                 lang: self.lang.as_deref(),
             })
             .send()
-            .await
-            .map_err(RequestError::HttpError)?
+            .await?
             .json::<UntaggedResultHelper<T, Error>>()
-            .await
-            .map_err(RequestError::HttpError)?
-            .0
-            .map_err(RequestError::WsError)
+            .await?
+            .0?;
+
+        Ok(ret)
     }
 
     pub async fn get_info(&self) -> Result<Info> {

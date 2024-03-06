@@ -203,7 +203,8 @@ impl Config {
         if matches!(&string_result, Err(err) if err.kind() == ErrorKind::NotFound) {
             return Ok(Self::default());
         }
-        toml::from_str(&string_result?).map_err(Into::into)
+        let config = toml::from_str(&string_result?)?;
+        Ok(config)
     }
 
     pub async fn write(&self) -> io::Result<()> {

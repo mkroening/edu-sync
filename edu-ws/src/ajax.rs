@@ -74,11 +74,9 @@ impl Client {
             .post(self.ajax_url.clone())
             .json(&requests)
             .send()
-            .await
-            .map_err(ReceiveError::HttpError)?
+            .await?
             .json::<UntaggedResultHelper<Vec<AjaxResult<T>>, RequestError>>()
-            .await
-            .map_err(ReceiveError::HttpError)?
+            .await?
             .0?
             .into_iter()
             .map(Into::into)
@@ -87,15 +85,17 @@ impl Client {
     }
 
     pub async fn get_config(&self) -> Result<Config, Error> {
-        self.call_ajax(&[Request {
-            method: "tool_mobile_get_public_config",
-            arguments: HashMap::new(),
-        }])
-        .await?
-        .into_iter()
-        .next()
-        .unwrap()
-        .map_err(Into::into)
+        let config = self
+            .call_ajax(&[Request {
+                method: "tool_mobile_get_public_config",
+                arguments: HashMap::new(),
+            }])
+            .await?
+            .into_iter()
+            .next()
+            .unwrap()?;
+
+        Ok(config)
     }
 }
 
@@ -122,8 +122,8 @@ pub enum Error {
 pub enum ReceiveError {
     #[error(transparent)]
     RequestError(#[from] RequestError),
-    #[error("{0}")]
-    HttpError(reqwest::Error),
+    #[error(transparent)]
+    HttpError(#[from] reqwest::Error),
 }
 
 #[cfg(test)]
