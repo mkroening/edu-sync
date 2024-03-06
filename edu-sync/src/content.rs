@@ -1,6 +1,5 @@
 use std::{
     cmp::Ordering,
-    ffi::OsStr,
     path::{Path, PathBuf},
 };
 
@@ -47,8 +46,10 @@ impl Content {
                 }
             }
 
-            let ws_name: &OsStr = ws_content.name.as_ref();
-            if path.file_name().unwrap() != ws_name {
+            if !<&str>::try_from(path.file_name().unwrap())
+                .unwrap()
+                .ends_with(&ws_content.name)
+            {
                 path.push(&ws_content.name);
             }
 

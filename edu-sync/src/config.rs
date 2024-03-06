@@ -50,7 +50,7 @@ impl CourseConfig {
 impl From<Course> for CourseConfig {
     fn from(course: Course) -> Self {
         Self {
-            name: course.full_name,
+            name: format!("{} {}", course.id, course.full_name),
             sync: false,
         }
     }

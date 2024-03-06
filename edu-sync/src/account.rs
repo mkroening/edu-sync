@@ -84,7 +84,7 @@ impl Account {
             .unwrap()
             .into_iter()
             .flat_map(move |section| {
-                let section_name = section.name;
+                let section_name = format!("{} {}", section.id, section.name);
                 let course_path = course_path.clone();
                 section.modules.into_iter().map(move |module| {
                     (
@@ -94,7 +94,7 @@ impl Account {
                 })
             })
             .filter_map(|(module, section_name)| {
-                let module_name = module.name;
+                let module_name = format!("{} {}", module.id, module.name);
                 module.contents.map(move |contents| {
                     (
                         section_name.join(sanitize_path_component(&module_name).as_ref()),
