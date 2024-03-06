@@ -40,7 +40,7 @@ impl Subcommand {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let fmt = tracing_subscriber::fmt();
+    let fmt = tracing_subscriber::fmt().with_writer(std::io::stderr);
     if env::var_os(EnvFilter::DEFAULT_ENV).is_some() {
         fmt.with_env_filter(EnvFilter::try_from_default_env()?)
             .init();
