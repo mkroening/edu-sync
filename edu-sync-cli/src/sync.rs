@@ -58,7 +58,7 @@ struct Syncer {
 
 impl Syncer {
     async fn from(config: Config) -> Self {
-        println!("Requesting content databases...");
+        eprintln!("Requesting content databases...");
         let parallel_downloads = config.parallel_downloads;
         let outdated_courses = config
             .accounts
@@ -91,7 +91,7 @@ impl Syncer {
                 })
             })
             .collect::<FuturesOrdered<_>>()
-            .filter_map(|res| future::ready(res.map_err(|err| println!("{}", err)).ok()))
+            .filter_map(|res| future::ready(res.map_err(|err| eprintln!("{}", err)).ok()))
             .filter(|course_status| future::ready(!course_status.downloads.is_empty()))
             .collect::<Vec<_>>()
             .await;
@@ -103,9 +103,9 @@ impl Syncer {
 
     async fn sync(self, no_confirm: bool) -> anyhow::Result<()> {
         if self.outdated_courses.is_empty() {
-            println!("All resources are up to date.");
+            eprintln!("All resources are up to date.");
         } else {
-            println!();
+            eprintln!();
 
             let size_width = 9;
             let pad_course_name = |course_name| {
@@ -131,7 +131,7 @@ impl Syncer {
                     (count, size, name)
                 })
                 .inspect(|(count, size, name)| {
-                    println!(
+                    eprintln!(
                         "{} {:>4} items, totalling {}",
                         pad_course_name(name),
                         count,
@@ -148,9 +148,9 @@ impl Syncer {
                 Cow::from("N/A")
             };
 
-            println!();
-            println!("Total: {} items, totalling {}", count, size);
-            println!();
+            eprintln!();
+            eprintln!("Total: {} items, totalling {}", count, size);
+            eprintln!();
 
             let proceed = no_confirm
                 || task::spawn_blocking(|| {
@@ -162,7 +162,7 @@ impl Syncer {
                 .await??;
 
             if proceed {
-                println!("Downloading missing files...");
+                eprintln!("Downloading missing files...");
                 self.download().await?;
             }
         }
@@ -231,8 +231,8 @@ impl Syncer {
 
         let (file_downloads, content_downloads, size_progress, content_progress, size) =
             download_tasks
-                .filter_map(|res| future::ready(res.map_err(|err| println!("{}", err)).ok()))
-                .filter_map(|res| future::ready(res.map_err(|err| println!("{}", err)).ok()))
+                .filter_map(|res| future::ready(res.map_err(|err| eprintln!("{}", err)).ok()))
+                .filter_map(|res| future::ready(res.map_err(|err| eprintln!("{}", err)).ok()))
                 .fold(
                     (Vec::new(), Vec::new(), Vec::new(), Vec::new(), 0),
                     |(
@@ -339,7 +339,7 @@ impl CourseStatus {
                             None
                         }
                         SyncStatus::Outdated(path) => {
-                            println!("Outdated: {}", path.display());
+                            eprintln!("Outdated: {}", path.display());
                             None
                         }
                         SyncStatus::UpToDate(path) => {
@@ -347,14 +347,14 @@ impl CourseStatus {
                             None
                         }
                         SyncStatus::Modified(path) => {
-                            println!("Modified: {}", path.display());
+                            eprintln!("Modified: {}", path.display());
                             None
                         }
                     }
                 })
             })
             .collect::<FuturesUnordered<_>>()
-            .filter_map(|res| future::ready(res.map_err(|err| println!("{}", err)).ok()))
+            .filter_map(|res| future::ready(res.map_err(|err| eprintln!("{}", err)).ok()))
             .collect::<Vec<_>>()
             .await
             .into_iter()

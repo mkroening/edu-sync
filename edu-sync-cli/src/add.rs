@@ -56,7 +56,7 @@ impl Subcommand {
             .insert(account_config.id.to_string(), account_config);
         config.write().await?;
 
-        println!("Successfully added {}", account_name);
+        eprintln!("Successfully added {}", account_name);
 
         Ok(())
     }
