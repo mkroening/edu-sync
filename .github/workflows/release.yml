@@ -6,8 +6,7 @@ on:
       - 'v*.*.*'
 
 env:
-  CARGO_TERM_COLOR: always
-  RUST_BACKTRACE: 1
+  GH_TOKEN: ${{ github.token }}
 
 defaults:
   run:
@@ -18,51 +17,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, macos-latest, windows-2019]
+        os: [ubuntu-20.04, macos-14, macos-12, windows-2019]
     steps:
-    - uses: actions/checkout@v2
-    - name: Install packages (Ubuntu)
-      if: matrix.os == 'ubuntu-18.04'
-      run: |
-        sudo apt-get update
-        sudo apt-get install libdbus-1-dev
-    - name: Install Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
-    - name: Build release binary
-      uses: actions-rs/cargo@v1
-      with:
-        command: build
-        args: --release
-    - name: Build archive
+    - uses: actions/checkout@v4
+    - run: gh release create ${GITHUB_REF#refs/tags/} --draft --title ${GITHUB_REF#refs/tags/v}
+      if: startsWith(matrix.os, 'ubuntu')
+    - uses: dtolnay/rust-toolchain@stable
+    - run: cargo build --release
+    - name: Create archive
       run: |
         VERSION=${GITHUB_REF#refs/tags/}
+        HOST=$(rustc -vV | sed -n 's|host: ||p')
+        DIST=edu-sync-cli-$VERSION-$HOST
 
-        if [ "${{ matrix.os }}" = "ubuntu-18.04" ]; then
-          staging=edu-sync-cli-$VERSION-linux
-        elif [ "${{ matrix.os }}" = "macos-latest" ]; then
-          staging=edu-sync-cli-$VERSION-macos
-        elif [ "${{ matrix.os }}" = "windows-2019" ]; then
-          staging=edu-sync-cli-$VERSION-win
-        fi
+        mkdir $DIST
 
-        mkdir $staging
-
-        if [ "${{ matrix.os }}" = "windows-2019" ]; then
-          mv target/release/edu-sync-cli.exe $staging
-          7z a $staging.zip $staging
-          echo "FILE=$staging.zip" >> $GITHUB_ENV
+        if [ "${{ matrix.os }}" = windows-* ]; then
+          mv target/release/edu-sync-cli.exe $DIST
+          7z a $DIST.zip $DIST
+          echo "FILE=$DIST.zip" >> $GITHUB_ENV
         else
-          mv target/release/edu-sync-cli $staging
-          tar czf $staging.tar.gz $staging
-          echo "FILE=$staging.tar.gz" >> $GITHUB_ENV
+          mv target/release/edu-sync-cli $DIST
+          tar czf $DIST.tar.gz $DIST
+          echo "FILE=$DIST.tar.gz" >> $GITHUB_ENV
         fi
-    - name: Upload release archive
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ${{ env.FILE }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - run: gh release upload ${GITHUB_REF#refs/tags/} $FILE
