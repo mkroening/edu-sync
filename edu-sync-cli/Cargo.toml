@@ -1,6 +1,6 @@
 [package]
 name = "edu-sync-cli"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["Martin Kröning <mkroening@posteo.net>"]
 edition = "2021"
 description = "Moodle synchronization utility (CLI)."
