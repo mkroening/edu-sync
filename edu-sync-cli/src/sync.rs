@@ -293,9 +293,7 @@ impl Syncer {
             .into_iter()
             .map(tokio::spawn)
             .collect::<Vec<_>>();
-        for file_download in file_downloads.await {
-            file_download?;
-        }
+        let file_downloads = file_downloads.await;
         for content_download in content_downloads {
             content_download.await?;
         }
@@ -308,6 +306,10 @@ impl Syncer {
             content_progress.finish();
         }
         total_bar.finish();
+
+        for file_download in file_downloads {
+            file_download??;
+        }
 
         Ok(())
     }
@@ -387,7 +389,8 @@ struct CourseDownloads<F, C> {
 impl CourseDownload {
     async fn run(
         self,
-    ) -> io::Result<CourseDownloads<impl Future<Output = ()>, impl Future<Output = ()>>> {
+    ) -> io::Result<CourseDownloads<impl Future<Output = io::Result<()>>, impl Future<Output = ()>>>
+    {
         let Self {
             downloads,
             token,
@@ -426,10 +429,16 @@ impl CourseDownload {
                     file_download
                         .run(&token, |val| progress.store(val, Ordering::Relaxed))
                         .await
-                        .unwrap();
-                    content_progress.inc(1);
-                    let path = file_download.path().display().to_string();
-                    content_progress.println(path);
+                        .map(|()| {
+                            content_progress.inc(1);
+                            let path = file_download.path().display();
+                            content_progress.println(path.to_string());
+                        })
+                        .inspect_err(|err| {
+                            let path = file_download.path().display();
+                            content_progress
+                                .println(format!("error while downloading {path}: {err}"));
+                        })
                 }
             })
             .collect::<Vec<_>>();
