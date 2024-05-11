@@ -16,7 +16,7 @@ use crate::{
 #[serde_as]
 #[derive(Deserialize, PartialEq, Debug)]
 pub struct Section {
-    pub id: u64,
+    pub id: i64,
     #[serde_as(as = "StringAsHtml")]
     pub name: String,
     #[serde_as(as = "Option<NumBool>")]
@@ -195,7 +195,7 @@ mod tests {
     fn test_section_deserialization() -> serde_json::Result<()> {
         assert_eq!(
             Section {
-                id: 1,
+                id: -1,
                 name: "a > b && a < c".to_string(),
                 visible: Some(true),
                 summary: "summary".to_string(),
@@ -207,7 +207,7 @@ mod tests {
                 modules: Vec::new(),
             },
             serde_json::from_value(json!({
-                "id": 1,
+                "id": -1,
                 "name": "a &gt; b &amp;&amp; a &lt; c",
                 "visible": 1,
                 "summary": "summary",
