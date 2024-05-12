@@ -77,7 +77,7 @@ impl Content {
             .ok()
     }
 
-    async fn download(self) -> SyncStatus {
+    fn download(self) -> SyncStatus {
         let mtime = self.mtime();
         match self.ws_content.ty {
             Type::File => {
@@ -102,7 +102,7 @@ impl Content {
 
     pub async fn sync(self) -> SyncStatus {
         match self.sync_status().await {
-            None => self.download().await,
+            None => self.download(),
             Some(Ordering::Less) => SyncStatus::Outdated(self.path),
             Some(Ordering::Equal) => SyncStatus::UpToDate(self.path),
             Some(Ordering::Greater) => SyncStatus::Modified(self.path),
