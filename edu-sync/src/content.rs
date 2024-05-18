@@ -125,9 +125,9 @@ pub struct ContentDownload {
 
 impl ContentDownload {
     pub async fn run(&mut self) -> io::Result<()> {
-        let mut file = self.common.create_file().await?;
+        let (mut file, path) = self.common.create_file().await?;
         file.write_all(self.content.as_bytes()).await?;
-        self.common.finish(&mut file).await?;
+        self.common.finish(&mut file, path).await?;
         Ok(())
     }
 
@@ -154,7 +154,7 @@ impl FileDownload {
         token: &Token,
         mut report_progress: impl FnMut(u64) + Send,
     ) -> io::Result<()> {
-        let mut file = self.common.create_file().await?;
+        let (mut file, path) = self.common.create_file().await?;
         token.apply(&mut self.url);
         let mut response = util::shared_http()
             .get(self.url.clone())
@@ -167,7 +167,7 @@ impl FileDownload {
             progress += chunk.len() as u64;
             report_progress(progress);
         }
-        self.common.finish(&mut file).await?;
+        self.common.finish(&mut file, path).await?;
         Ok(())
     }
 
@@ -190,10 +190,10 @@ pub struct UrlDownload {
 
 impl UrlDownload {
     pub async fn run(&mut self) -> io::Result<()> {
-        let mut file = self.common.create_file().await?;
+        let (mut file, path) = self.common.create_file().await?;
         let buf = format!(include_str!("url_format.html"), url = self.url);
         file.write_all(buf.as_bytes()).await?;
-        self.common.finish(&mut file).await?;
+        self.common.finish(&mut file, path).await?;
         Ok(())
     }
 
@@ -210,35 +210,39 @@ impl UrlDownload {
 
 #[derive(Debug)]
 pub struct CommonDownload {
-    dl_path: PathBuf,
     dst_path: PathBuf,
     mtime: FileTime,
 }
 
 impl CommonDownload {
     fn new(dst_path: PathBuf, mtime: FileTime) -> Self {
-        let mut dl_path = dst_path.clone();
-        dl_path.push_file_name_suffix(".tmp");
-        Self {
-            dl_path,
-            dst_path,
-            mtime,
-        }
+        Self { dst_path, mtime }
     }
 
-    async fn create_file(&self) -> io::Result<File> {
-        if let Some(parent) = self.dl_path.parent() {
+    async fn create_file(&self) -> io::Result<(File, PathBuf)> {
+        let dl_path = {
+            let mut dl_path = self.dst_path.clone();
+            dl_path.push_file_name_suffix(".tmp");
+            dl_path
+        };
+
+        if let Some(parent) = dl_path.parent() {
             fs::create_dir_all(parent).await?;
         }
-        File::create(&self.dl_path).await
+        let file = File::create(&dl_path).await?;
+
+        Ok((file, dl_path))
     }
 
-    async fn finish(&mut self, file: &mut File) -> io::Result<()> {
+    async fn finish(&mut self, file: &mut File, dl_path: PathBuf) -> io::Result<()> {
         file.shutdown().await?;
         let mtime = self.mtime;
-        let dl_path = self.dl_path.clone();
-        task::spawn_blocking(move || filetime::set_file_times(dl_path, mtime, mtime)).await??;
-        fs::rename(&self.dl_path, &self.dst_path).await?;
+        let dl_path = task::spawn_blocking(move || {
+            filetime::set_file_times(&dl_path, mtime, mtime)?;
+            Result::<_, io::Error>::Ok(dl_path)
+        })
+        .await??;
+        fs::rename(dl_path, &self.dst_path).await?;
         Ok(())
     }
 }
