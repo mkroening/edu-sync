@@ -67,16 +67,6 @@ impl Content {
         FileTime::from_unix_time(self.ws_content.modified.unix_timestamp(), 0)
     }
 
-    async fn sync_status(&self) -> Option<Ordering> {
-        fs::metadata(&self.path)
-            .await
-            .map(|metadata| {
-                let file_mtime = FileTime::from_last_modification_time(&metadata);
-                file_mtime.cmp(&self.mtime())
-            })
-            .ok()
-    }
-
     fn download(self) -> SyncStatus {
         let mtime = self.mtime();
         match self.ws_content.ty {
@@ -101,7 +91,7 @@ impl Content {
     }
 
     pub async fn sync(self) -> SyncStatus {
-        match self.sync_status().await {
+        match cmp_mtime(&self.path, &self.mtime()).await.ok() {
             None => self.download(),
             Some(Ordering::Less) => SyncStatus::Outdated(self.path),
             Some(Ordering::Equal) => SyncStatus::UpToDate(self.path),
@@ -251,4 +241,11 @@ impl CommonDownload {
         fs::rename(&self.dl_path, &self.dst_path).await?;
         Ok(())
     }
+}
+
+async fn cmp_mtime(path: &Path, mtime: &FileTime) -> io::Result<Ordering> {
+    fs::metadata(path).await.map(|metadata| {
+        let file_mtime = FileTime::from_last_modification_time(&metadata);
+        file_mtime.cmp(mtime)
+    })
 }
