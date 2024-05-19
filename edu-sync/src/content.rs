@@ -1,13 +1,13 @@
 use std::{
     cmp::Ordering,
     path::{Path, PathBuf},
+    time::SystemTime,
 };
 
 use edu_ws::{
     response::content::{Content as WsContent, Type},
     token::Token,
 };
-use filetime::FileTime;
 use reqwest::Url;
 use tokio::{
     fs::{self, File},
@@ -63,8 +63,8 @@ impl Content {
         Self { ws_content, path }
     }
 
-    fn mtime(&self) -> FileTime {
-        FileTime::from_unix_time(self.ws_content.modified.unix_timestamp(), 0)
+    fn mtime(&self) -> SystemTime {
+        self.ws_content.modified.into()
     }
 
     fn download(self) -> SyncStatus {
@@ -127,7 +127,7 @@ impl ContentDownload {
     pub async fn run(&mut self) -> io::Result<()> {
         let (mut file, path) = self.common.create_file().await?;
         file.write_all(self.content.as_bytes()).await?;
-        self.common.finish(&mut file, path).await?;
+        self.common.finish(file, path).await?;
         Ok(())
     }
 
@@ -167,7 +167,7 @@ impl FileDownload {
             progress += chunk.len() as u64;
             report_progress(progress);
         }
-        self.common.finish(&mut file, path).await?;
+        self.common.finish(file, path).await?;
         Ok(())
     }
 
@@ -193,7 +193,7 @@ impl UrlDownload {
         let (mut file, path) = self.common.create_file().await?;
         let buf = format!(include_str!("url_format.html"), url = self.url);
         file.write_all(buf.as_bytes()).await?;
-        self.common.finish(&mut file, path).await?;
+        self.common.finish(file, path).await?;
         Ok(())
     }
 
@@ -211,11 +211,11 @@ impl UrlDownload {
 #[derive(Debug)]
 pub struct CommonDownload {
     dst_path: PathBuf,
-    mtime: FileTime,
+    mtime: SystemTime,
 }
 
 impl CommonDownload {
-    fn new(dst_path: PathBuf, mtime: FileTime) -> Self {
+    fn new(dst_path: PathBuf, mtime: SystemTime) -> Self {
         Self { dst_path, mtime }
     }
 
@@ -234,22 +234,19 @@ impl CommonDownload {
         Ok((file, dl_path))
     }
 
-    async fn finish(&mut self, file: &mut File, dl_path: PathBuf) -> io::Result<()> {
-        file.shutdown().await?;
+    async fn finish(&mut self, file: File, dl_path: PathBuf) -> io::Result<()> {
+        let file = file.into_std().await;
         let mtime = self.mtime;
-        let dl_path = task::spawn_blocking(move || {
-            filetime::set_file_times(&dl_path, mtime, mtime)?;
-            Result::<_, io::Error>::Ok(dl_path)
-        })
-        .await??;
+        task::spawn_blocking(move || file.set_modified(mtime)).await??;
+
         fs::rename(dl_path, &self.dst_path).await?;
         Ok(())
     }
 }
 
-async fn cmp_mtime(path: &Path, mtime: &FileTime) -> io::Result<Ordering> {
+async fn cmp_mtime(path: &Path, mtime: &SystemTime) -> io::Result<Ordering> {
     fs::metadata(path).await.map(|metadata| {
-        let file_mtime = FileTime::from_last_modification_time(&metadata);
+        let file_mtime = metadata.modified().unwrap();
         file_mtime.cmp(mtime)
     })
 }

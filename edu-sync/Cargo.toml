@@ -13,7 +13,6 @@ categories = ["asynchronous", "web-programming"]
 edu-ws = { path = "../edu-ws" }
 
 directories = "5"
-filetime = "0.2"
 regex = "1.5"
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
 serde = { version = "1.0", features = ["derive"] }
