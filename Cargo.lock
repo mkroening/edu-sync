@@ -312,7 +312,7 @@ dependencies = [
 
 [[package]]
 name = "edu-sync"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "directories",
  "edu-ws",
@@ -329,7 +329,7 @@ dependencies = [
 
 [[package]]
 name = "edu-sync-cli"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -346,7 +346,7 @@ dependencies = [
 
 [[package]]
 name = "edu-ws"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "base64",
  "edu-ws-derive",
@@ -367,7 +367,7 @@ dependencies = [
 
 [[package]]
 name = "edu-ws-derive"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "proc-macro2",
  "quote",
