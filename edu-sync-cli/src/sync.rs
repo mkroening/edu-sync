@@ -340,16 +340,8 @@ impl CourseStatus {
                             );
                             None
                         }
-                        SyncStatus::Outdated(path) => {
-                            eprintln!("Outdated: {}", path.display());
-                            None
-                        }
                         SyncStatus::UpToDate(path) => {
                             trace!("Up to date: {}", path.display());
-                            None
-                        }
-                        SyncStatus::Modified(path) => {
-                            eprintln!("Modified: {}", path.display());
                             None
                         }
                     }

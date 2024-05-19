@@ -11,7 +11,7 @@ use edu_ws::{
 use reqwest::Url;
 use tokio::{
     fs::{self, File},
-    io::{self, AsyncWriteExt},
+    io::{self, AsyncBufReadExt, AsyncSeekExt, AsyncWriteExt, BufReader},
     task,
 };
 
@@ -27,9 +27,7 @@ pub struct Content {
 pub enum SyncStatus {
     Downloadable(Download),
     NotSupported(Type, PathBuf),
-    Outdated(PathBuf),
     UpToDate(PathBuf),
-    Modified(PathBuf),
 }
 
 impl Content {
@@ -91,11 +89,10 @@ impl Content {
     }
 
     pub async fn sync(self) -> SyncStatus {
-        match cmp_mtime(&self.path, &self.mtime()).await.ok() {
-            None => self.download(),
-            Some(Ordering::Less) => SyncStatus::Outdated(self.path),
-            Some(Ordering::Equal) => SyncStatus::UpToDate(self.path),
-            Some(Ordering::Greater) => SyncStatus::Modified(self.path),
+        let latest_path = latest_path(self.path.clone()).await.unwrap();
+        match cmp_mtime(&latest_path, &self.mtime()).await.ok() {
+            None | Some(Ordering::Less) | Some(Ordering::Greater) => self.download(),
+            Some(Ordering::Equal) => SyncStatus::UpToDate(latest_path),
         }
     }
 }
@@ -229,16 +226,35 @@ impl CommonDownload {
         if let Some(parent) = dl_path.parent() {
             fs::create_dir_all(parent).await?;
         }
-        let file = File::create(&dl_path).await?;
+        let file = File::options()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(&dl_path)
+            .await?;
 
         Ok((file, dl_path))
     }
 
-    async fn finish(&mut self, file: File, dl_path: PathBuf) -> io::Result<()> {
-        let file = file.into_std().await;
-        let mtime = self.mtime;
-        task::spawn_blocking(move || file.set_modified(mtime)).await??;
+    async fn finish(&mut self, mut file: File, dl_path: PathBuf) -> io::Result<()> {
+        let latest_path = latest_path(self.dst_path.clone()).await?;
+        match cmp_mtime(&latest_path, &self.mtime).await.ok() {
+            Some(Ordering::Equal) => unreachable!(),
+            Some(Ordering::Less) | Some(Ordering::Greater) => {
+                let mut dst_file = File::open(&latest_path).await?;
+                if file_eq(&mut file, &mut dst_file).await? {
+                    file_set_modified(dst_file, self.mtime).await?;
+                    fs::remove_file(&dl_path).await?;
+                    return Ok(());
+                } else {
+                    self.dst_path = next_path(self.dst_path.clone()).await?;
+                }
+            }
+            None => {}
+        }
 
+        file_set_modified(file, self.mtime).await?;
         fs::rename(dl_path, &self.dst_path).await?;
         Ok(())
     }
@@ -249,4 +265,68 @@ async fn cmp_mtime(path: &Path, mtime: &SystemTime) -> io::Result<Ordering> {
         let file_mtime = metadata.modified().unwrap();
         file_mtime.cmp(mtime)
     })
+}
+
+async fn file_eq(file_a: &mut File, file_b: &mut File) -> io::Result<bool> {
+    let (metadata_a, metadata_b) = tokio::join!(file_a.metadata(), file_b.metadata());
+
+    if metadata_a?.len() != metadata_b?.len() {
+        return Ok(false);
+    }
+
+    let (seek_a, seek_b) = tokio::join!(file_a.rewind(), file_b.rewind());
+    seek_a?;
+    seek_b?;
+
+    let mut reader_a = BufReader::new(file_a);
+    let mut reader_b = BufReader::new(file_b);
+
+    loop {
+        let (buf_a, buf_b) = tokio::join!(reader_a.fill_buf(), reader_b.fill_buf());
+        let (buf_a, buf_b) = (buf_a?, buf_b?);
+        if buf_a != buf_b {
+            return Ok(false);
+        }
+        if buf_a.is_empty() {
+            return Ok(buf_b.is_empty());
+        }
+        let (len_a, len_b) = (buf_a.len(), buf_b.len());
+        reader_a.consume(len_a);
+        reader_b.consume(len_b);
+    }
+}
+
+async fn file_set_modified(file: File, mtime: SystemTime) -> io::Result<()> {
+    let file = file.into_std().await;
+    task::spawn_blocking(move || file.set_modified(mtime)).await??;
+    Ok(())
+}
+
+fn alt_paths(path: &Path) -> impl Iterator<Item = PathBuf> + '_ {
+    (0..).map(|i| {
+        let mut path = path.to_path_buf();
+        path.push_file_prefix_suffix(format!("_new-{i}"));
+        path
+    })
+}
+
+async fn latest_path(path: PathBuf) -> io::Result<PathBuf> {
+    let mut latest_path = path.clone();
+    for path in alt_paths(&path) {
+        if fs::try_exists(&path).await? {
+            latest_path = path;
+        } else {
+            break;
+        }
+    }
+    Ok(latest_path)
+}
+
+async fn next_path(path: PathBuf) -> io::Result<PathBuf> {
+    for path in alt_paths(&path) {
+        if !fs::try_exists(&path).await? {
+            return Ok(path);
+        }
+    }
+    unreachable!()
 }
