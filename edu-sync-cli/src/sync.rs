@@ -21,10 +21,13 @@ use edu_sync::{
 use futures_util::{
     future,
     stream::{self, FuturesOrdered, FuturesUnordered},
-    StreamExt,
+    StreamExt, TryFutureExt,
 };
 use indicatif::{BinaryBytes, MultiProgress, ProgressBar, ProgressStyle};
-use tokio::{task, time};
+use tokio::{
+    task,
+    time::{self, sleep},
+};
 use tracing::{info, trace};
 
 use crate::util;
@@ -86,12 +89,54 @@ impl Syncer {
             })
             .map(|(account, course_id, course_name, course_path)| {
                 tokio::spawn(async move {
-                    let contents = account.get_contents(course_id, course_path).await;
-                    CourseStatus::from_contents(contents, account.token(), course_name).await
+                    let fetch_status = |course_path, course_name| async {
+                        account
+                            .get_contents(course_id, course_path)
+                            .and_then(|contents| async {
+                                let status = CourseStatus::from_contents(
+                                    contents,
+                                    account.token(),
+                                    course_name,
+                                )
+                                .await;
+                                Ok(status)
+                            })
+                            .await
+                    };
+
+                    let account_id = account.id();
+                    let mut status = fetch_status(course_path.clone(), course_name.clone()).await;
+                    for _ in 0..4 {
+                        match &status {
+                            Ok(_) => break,
+                            Err(err) if err.is_http() => {
+                                sleep(Duration::from_millis(100)).await;
+                                eprintln!(
+                                    "Could not get contents for {course_name} from {account_id} \
+                                     ({err}). Retrying."
+                                );
+                                status =
+                                    fetch_status(course_path.clone(), course_name.clone()).await;
+                            }
+                            Err(_) => break,
+                        }
+                    }
+
+                    match status {
+                        Ok(ok) => Some(ok),
+                        Err(err) => {
+                            eprintln!(
+                                "Could not get contents for {course_name} from {account_id} \
+                                 ({err}). Giving up."
+                            );
+                            None
+                        }
+                    }
                 })
             })
             .collect::<FuturesOrdered<_>>()
-            .filter_map(|res| future::ready(res.map_err(|err| eprintln!("{}", err)).ok()))
+            .filter_map(|res| async move { res.inspect_err(|err| eprintln!("{err}")).ok() })
+            .filter_map(|res| async move { res })
             .filter(|course_status| future::ready(!course_status.downloads.is_empty()))
             .collect::<Vec<_>>()
             .await;

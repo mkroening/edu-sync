@@ -38,6 +38,12 @@ pub enum RequestError {
     Decode(#[from] serde_json::Error),
 }
 
+impl RequestError {
+    pub fn is_http(&self) -> bool {
+        matches!(self, Self::HttpError(_))
+    }
+}
+
 pub type Result<T> = result::Result<T, RequestError>;
 
 #[derive(Debug)]

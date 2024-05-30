@@ -50,6 +50,11 @@ impl Account {
     }
 
     #[must_use]
+    pub const fn id(&self) -> &Id {
+        &self.id
+    }
+
+    #[must_use]
     pub const fn token(&self) -> Token {
         self.token
     }
@@ -77,11 +82,11 @@ impl Account {
         &self,
         course_id: u64,
         course_path: PathBuf,
-    ) -> impl Iterator<Item = Content> {
-        self.ws_client()
+    ) -> ws::Result<impl Iterator<Item = Content>> {
+        let contents = self
+            .ws_client()
             .get_contents(course_id)
-            .await
-            .unwrap()
+            .await?
             .into_iter()
             .flat_map(move |section| {
                 let section_name = format!("{} {}", section.id, section.name);
@@ -106,7 +111,9 @@ impl Account {
                 contents
                     .into_iter()
                     .map(move |content| Content::new(content, dir.clone()))
-            })
+            });
+
+        Ok(contents)
     }
 }
 
