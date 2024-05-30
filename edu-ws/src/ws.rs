@@ -17,13 +17,13 @@ use crate::{
 #[derive(Error, Deserialize, Debug, PartialEq)]
 #[serde(tag = "errorcode")]
 pub enum Error {
-    #[error("{message}")]
+    #[error("access exception: {message}")]
     #[serde(rename = "accessexception")]
     AccessException { message: String },
-    #[error("{message}")]
+    #[error("course context not valid: {message}")]
     #[serde(rename = "errorcoursecontextnotvalid")]
     CourseContextNotValid { message: String },
-    #[error("{message}")]
+    #[error("invalid token: {message}")]
     #[serde(rename = "invalidtoken")]
     InvalidToken { message: String },
 }
