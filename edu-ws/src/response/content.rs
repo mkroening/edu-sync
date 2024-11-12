@@ -62,7 +62,7 @@ pub struct Module {
     #[serde(rename = "modplural")]
     pub type_plural: String,
     pub availability: Option<String>,
-    pub indent: u64,
+    pub indent: i64,
     #[serde(rename = "onclick")]
     pub on_click: Option<String>,
     #[serde(rename = "afterlink")]
