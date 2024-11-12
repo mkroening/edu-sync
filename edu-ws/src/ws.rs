@@ -10,7 +10,7 @@ use url::Url;
 
 use crate::{
     response::{content::Section, course::Course, info::Info},
-    serde::{NumBool, UntaggedResultHelper},
+    serde::NumBool,
     token::Token,
 };
 
@@ -35,7 +35,7 @@ pub enum RequestError {
     #[error(transparent)]
     HttpError(#[from] reqwest::Error),
     #[error(transparent)]
-    Decode(#[from] serde_json::Error),
+    Decode(#[from] serde_path_to_error::Error<serde_json::Error>),
 }
 
 impl RequestError {
@@ -121,13 +121,23 @@ impl Client {
             .text()
             .await
             .unwrap();
+        debug!(response);
 
-        let ret = serde_json::from_str::<'_, UntaggedResultHelper<T, Error>>(&response)
-            .inspect(|_| debug!(response))
-            .inspect_err(|err| error!(?err, response, "Could not deserialize response"))?
-            .0?;
+        let de = &mut serde_json::Deserializer::from_str(&response);
+        let ok_err = match serde_path_to_error::deserialize(de) {
+            Ok(value) => return Ok(value),
+            Err(err) => err,
+        };
 
-        Ok(ret)
+        let de = &mut serde_json::Deserializer::from_str(&response);
+        match serde_path_to_error::deserialize(de) {
+            Ok(value) => Err(RequestError::WsError(value)),
+            Err(err) => {
+                error!(%ok_err, "Could not deserialize response");
+                error!(%err, "Could not deserialize error");
+                Err(RequestError::Decode(ok_err))
+            }
+        }
     }
 
     pub async fn get_info(&self) -> Result<Info> {
