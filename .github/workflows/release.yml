@@ -32,7 +32,7 @@ jobs:
 
         mkdir $DIST
 
-        if [ "${{ matrix.os }}" = windows-* ]; then
+        if [ "${{ matrix.os }}" = windows-2019 ]; then
           mv target/release/edu-sync-cli.exe $DIST
           7z a $DIST.zip $DIST
           echo "FILE=$DIST.zip" >> $GITHUB_ENV
