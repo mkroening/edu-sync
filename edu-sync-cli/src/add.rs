@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use dialoguer::Password;
 use edu_sync::{
     account::Account,
-    config::{AccountConfig, Config},
+    config::{self, AccountConfig, Config},
 };
 use tokio::task;
 use url::Url;
@@ -48,7 +48,8 @@ impl Subcommand {
                 .parse()?
         };
 
-        let account_config = AccountConfig::new(self.url, token, self.path, self.lang).await?;
+        let expanded_path = config::expand_path(&self.path).await?;
+        let account_config = AccountConfig::new(self.url, token, expanded_path, self.lang).await?;
         let mut config = config_task.await??;
         let account_name = account_config.to_string();
         config
