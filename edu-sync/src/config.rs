@@ -105,6 +105,16 @@ impl CourseConfigs {
     }
 }
 
+// Expand Tilde to home folder, create the directory if it does not exist and
+// then canonicalize the path.
+pub async fn expand_path(path: &Path) -> io::Result<PathBuf> {
+    let expanded_path = shellexpand::path::tilde(&path);
+    if !expanded_path.try_exists()? {
+        fs::create_dir(&expanded_path).await?;
+    }
+    fs::canonicalize(expanded_path).await
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
 pub struct AccountConfig {
