@@ -14,12 +14,13 @@ use edu_ws::{
     ws,
 };
 use reqwest::Url;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use serde_with::{serde_as, serde_conv, DisplayFromStr};
 use thiserror::Error;
 use tokio::{
     fs::{self, File},
     io::AsyncWriteExt,
+    runtime::Handle,
 };
 use tracing::warn;
 
@@ -115,6 +116,17 @@ pub async fn expand_path(path: &Path) -> io::Result<PathBuf> {
     fs::canonicalize(expanded_path).await
 }
 
+// Custom deserializer function to check if the path is absolute and to
+// canonicalize the path
+fn deserialize_absolute_path<'de, D>(deserializer: D) -> Result<PathBuf, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let path = PathBuf::deserialize(deserializer)?;
+    let expanded_path = Handle::current().block_on(expand_path(&path));
+    expanded_path.map_err(serde::de::Error::custom)
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "kebab-case")]
 pub struct AccountConfig {
@@ -123,6 +135,7 @@ pub struct AccountConfig {
     #[serde(flatten)]
     pub id: Id,
     pub token: Token,
+    #[serde(deserialize_with = "deserialize_absolute_path")]
     pub path: PathBuf,
     #[serde(default)]
     pub courses: CourseConfigs,
