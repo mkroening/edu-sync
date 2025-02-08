@@ -19,7 +19,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_with = "3"
 shellexpand = { version = "3", features = ["path"] }
 thiserror = "2"
-tokio = { version = "1", default-features = false, features = ["fs"] }
+tokio = { version = "1", default-features = false, features = ["fs", "macros"] }
 toml = "0.8"
 tracing = "0.1"
 url = "2.2"
