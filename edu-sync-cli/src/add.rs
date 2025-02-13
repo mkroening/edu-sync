@@ -48,7 +48,7 @@ impl Subcommand {
                 .parse()?
         };
 
-        let expanded_path = config::expand_path(&self.path).await?;
+        let expanded_path = config::expand_path(&self.path)?;
         let account_config = AccountConfig::new(self.url, token, expanded_path, self.lang).await?;
         let mut config = config_task.await??;
         let account_name = account_config.to_string();

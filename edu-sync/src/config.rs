@@ -20,7 +20,6 @@ use thiserror::Error;
 use tokio::{
     fs::{self, File},
     io::AsyncWriteExt,
-    runtime::Handle,
 };
 use tracing::warn;
 
@@ -108,12 +107,12 @@ impl CourseConfigs {
 
 // Expand Tilde to home folder, create the directory if it does not exist and
 // then canonicalize the path.
-pub async fn expand_path(path: &Path) -> io::Result<PathBuf> {
+pub fn expand_path(path: &Path) -> io::Result<PathBuf> {
     let expanded_path = shellexpand::path::tilde(&path);
     if !expanded_path.try_exists()? {
-        fs::create_dir(&expanded_path).await?;
+        std::fs::create_dir(&expanded_path)?;
     }
-    fs::canonicalize(expanded_path).await
+    std::fs::canonicalize(expanded_path)
 }
 
 // Custom deserializer function to check if the path is absolute and to
@@ -123,8 +122,7 @@ where
     D: Deserializer<'de>,
 {
     let path = PathBuf::deserialize(deserializer)?;
-    let expanded_path = Handle::current().block_on(expand_path(&path));
-    expanded_path.map_err(serde::de::Error::custom)
+    expand_path(&path).map_err(serde::de::Error::custom)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
