@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     cmp::Ordering,
     path::{Path, PathBuf},
     time::SystemTime,
@@ -15,7 +16,7 @@ use tokio::{
     task,
 };
 
-use crate::util::{self, PathBufExt};
+use crate::util::{self, sanitize_path_component, PathBufExt};
 
 #[derive(Debug, Clone)]
 pub struct Content {
@@ -53,6 +54,11 @@ impl Content {
 
             if ws_content.ty == Type::Url {
                 path.push_file_name_suffix(".html");
+            }
+
+            let file_name = path.file_name().unwrap().to_str().unwrap();
+            if let Cow::Owned(sanitized_file_name) = sanitize_path_component(file_name) {
+                path.set_file_name(sanitized_file_name);
             }
 
             path

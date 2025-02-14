@@ -75,7 +75,7 @@ impl PathBufExt for PathBuf {
 pub fn sanitize_path_component(path_component: &str) -> Cow<'_, str> {
     static RE: OnceLock<Regex> = OnceLock::new();
 
-    RE.get_or_init(|| Regex::new(r"[\\/]+|^\.\.??$").unwrap())
+    RE.get_or_init(|| Regex::new(r#"["*/:<>?\\|]|^\.\.??$"#).unwrap())
         .replace_all(path_component, NoExpand("_"))
 }
 
@@ -85,11 +85,16 @@ mod tests {
 
     #[test]
     fn sanitize_filename_test() {
-        assert_eq!(sanitize_path_component(r"/a//b/\c\\d\"), "_a_b_c_d_");
+        assert_eq!(sanitize_path_component(r"/a//b/\c\\d\"), "_a__b__c__d_");
         assert_eq!(sanitize_path_component(".a.b."), ".a.b.");
         assert_eq!(sanitize_path_component("."), "_");
         assert_eq!(sanitize_path_component(".."), "_");
         assert_eq!(sanitize_path_component("..."), "...");
+        assert_eq!(
+            sanitize_path_component(r#"0"1*2/3:4<5>6?7\8|9"#),
+            "0_1_2_3_4_5_6_7_8_9"
+        );
+        assert_eq!(sanitize_path_component(r#"a**<>b"#), "a____b");
     }
 
     #[test]
