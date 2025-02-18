@@ -27,7 +27,9 @@ $ edu-sync-cli help
         # You will be prompted to enter your password
         ```
 
-    *   Using a token for the Moodle mobile web service — some instances show it in preferences/security keys:
+    *   Using a token for the Moodle mobile web service.
+        This could be obtained in some instances inside preferences/security keys.
+        It could also be obtained using  [SSO parameter on Moodle-DL](https://github.com/C0D3D3V/Moodle-DL) as shown [here](https://github.com/mkroening/edu-sync/issues/9#issuecomment-2446564050)
 
         ```bash
         $ edu-sync-cli add https://example.com ~/download-dir
