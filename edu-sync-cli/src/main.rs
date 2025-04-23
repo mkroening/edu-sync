@@ -14,12 +14,12 @@ mod util;
 
 use std::env;
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
 use human_panic::setup_panic;
 use tracing_subscriber::EnvFilter;
 
 #[derive(Debug, clap::Parser)]
-#[clap(name = "Edu Sync", author, about)]
+#[clap(name = "edu-sync-cli", author, about)]
 enum Subcommand {
     Add(add::Subcommand),
     Config(config::Subcommand),
@@ -40,6 +40,8 @@ impl Subcommand {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    clap_complete::CompleteEnv::with_factory(crate::Subcommand::command).complete();
+
     let fmt = tracing_subscriber::fmt().with_writer(std::io::stderr);
     if env::var_os(EnvFilter::DEFAULT_ENV).is_some() {
         fmt.with_env_filter(EnvFilter::try_from_default_env()?)
