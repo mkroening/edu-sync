@@ -62,6 +62,18 @@ The binary name for Edu Sync is `edu-sync-cli`.
 
 If you're an Arch Linux user, then you can install Edu Sync from the [Arch User Repository](https://aur.archlinux.org/packages/edu-sync/).
 
+### Shell completions
+
+Edu Sync uses clap's dynamic completions. To generate the completion stub, use:
+
+```sh
+COMPLETE=<SHELL> edu-sync-cli
+```
+
+Where `<SHELL>` is one of `bash`, `elvish`, `fish`, `powershell` or `zsh`
+
+If you use the AUR package, the completions for `bash`, `fish` and `zsh` should get installed automatically.
+
 ## Licensing
 
 This project is licensed under

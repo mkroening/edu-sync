@@ -28,8 +28,10 @@ pub struct Subcommand {
     #[structopt(short, long)]
     lang: Option<String>,
     /// The URL of the Moodle instance.
+    #[arg(value_hint = clap::ValueHint::Hostname)]
     url: Url,
     /// The path to download resources to.
+    #[arg(value_hint = clap::ValueHint::DirPath)]
     path: PathBuf,
 }
 
