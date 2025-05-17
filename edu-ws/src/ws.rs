@@ -151,16 +151,12 @@ impl Client {
         struct Params {
             #[serde(rename = "userid")]
             user_id: u64,
-            #[serde_as(as = "NumBool")]
-            #[serde(rename = "returnusercount")]
-            return_user_count: bool,
         }
 
         self.call_web_service(
             "core_enrol_get_users_courses",
             Some(&Params {
                 user_id,
-                return_user_count,
             }),
         )
         .await
