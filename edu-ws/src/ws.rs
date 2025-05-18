@@ -26,6 +26,18 @@ pub enum Error {
     #[error("invalid token: {message}")]
     #[serde(rename = "invalidtoken")]
     InvalidToken { message: String },
+    #[error("invalid param: {message}{}", {
+        match debuginfo {
+            Some(debuginfo) => format!(", debuginfo: {debuginfo}"),
+            None => String::new(),
+        }
+    })]
+    #[serde(rename = "errorinvalidparam")]
+    #[serde(alias = "invalidparameter")]
+    InvalidParam {
+        message: String,
+        debuginfo: Option<String>,
+    },
 }
 
 #[derive(Error, Debug)]
@@ -210,6 +222,34 @@ mod tests {
                 "message": "message",
             }))?
         );
+
+        assert_eq!(
+            Error::InvalidParam {
+                message: "The param \"includestealthmodules\" is invalid.".to_string(),
+                debuginfo: None,
+            },
+            serde_json::from_value(json!({
+                "errorcode": "errorinvalidparam",
+                "exception": "moodle_exception",
+                "message": "The param \"includestealthmodules\" is invalid.",
+            }))?
+        );
+
+        assert_eq!(
+            Error::InvalidParam {
+                message: "Invalid parameter value detected".to_string(),
+                debuginfo: Some(
+                    "Unexpected keys (returnusercount) detected in parameter array.".to_string()
+                ),
+            },
+            serde_json::from_value(json!({
+                "errorcode": "invalidparameter",
+                "exception": "invalid_parameter_exception",
+                "message": "Invalid parameter value detected",
+                "debuginfo": "Unexpected keys (returnusercount) detected in parameter array.",
+            }))?
+        );
+
         Ok(())
     }
 }
