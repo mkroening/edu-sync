@@ -16,7 +16,7 @@ pub fn check_active_courses(config: &Config) -> bool {
         false
     } else if !config.has_active_courses() {
         eprintln!(
-            "No courses activated. To activate synchronization for courses, edit the config at {}",
+            "No courses activated. To activate synchronization for courses, edit the config at\n{}",
             Config::path().display()
         );
         false
