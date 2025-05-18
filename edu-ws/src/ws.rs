@@ -164,19 +164,45 @@ impl Client {
         struct Params {
             #[serde(rename = "userid")]
             user_id: u64,
-            #[serde_as(as = "NumBool")]
+            #[serde_as(as = "Option<NumBool>")]
             #[serde(rename = "returnusercount")]
-            return_user_count: bool,
+            return_user_count: Option<bool>,
         }
 
-        self.call_web_service(
-            "core_enrol_get_users_courses",
-            Some(&Params {
-                user_id,
-                return_user_count,
-            }),
-        )
-        .await
+        let mut res = self
+            .call_web_service::<Vec<Course>, _>(
+                "core_enrol_get_users_courses",
+                Some(&Params {
+                    user_id,
+                    return_user_count: Some(return_user_count),
+                }),
+            )
+            .await;
+
+        // moodle has introduced `includestealthmodules` in version 3.7:
+        // https://tracker.moodle.org/browse/MDL-64886
+        // If the current moodle instance rejects the parameter, we try again without
+        // it.
+        if let Err(RequestError::WsError(Error::InvalidParam {
+            debuginfo: Some(debuginfo),
+            ..
+        })) = &res
+        {
+            if debuginfo.contains("returnusercount") {
+                debug!("retrying without returnusercount");
+                res = self
+                    .call_web_service::<Vec<Course>, _>(
+                        "core_enrol_get_users_courses",
+                        Some(&Params {
+                            user_id,
+                            return_user_count: None,
+                        }),
+                    )
+                    .await;
+            }
+        }
+
+        res
     }
 
     pub async fn get_contents(&self, course_id: u64) -> Result<Vec<Section>> {
