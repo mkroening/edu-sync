@@ -212,21 +212,43 @@ impl Client {
             #[serde(rename = "courseid")]
             course_id: u64,
             #[serde(rename = "options[0][name]")]
-            include_stealth_modules_name: &'a str,
-            #[serde_as(as = "NumBool")]
+            include_stealth_modules_name: Option<&'a str>,
+            #[serde_as(as = "Option<NumBool>")]
             #[serde(rename = "options[0][value]")]
-            include_stealth_modules_value: bool,
+            include_stealth_modules_value: Option<bool>,
         }
 
-        self.call_web_service(
-            "core_course_get_contents",
-            Some(&Params {
-                course_id,
-                include_stealth_modules_name: "includestealthmodules",
-                include_stealth_modules_value: true,
-            }),
-        )
-        .await
+        let mut res = self
+            .call_web_service(
+                "core_course_get_contents",
+                Some(&Params {
+                    course_id,
+                    include_stealth_modules_name: Some("includestealthmodules"),
+                    include_stealth_modules_value: Some(true),
+                }),
+            )
+            .await;
+
+        // moodle has introduced `includestealthmodules` in version 3.5.3:
+        // https://tracker.moodle.org/browse/MDL-63542
+        // If the current moodle instance complains rejects parameter, we try again
+        // without it.
+        if let Err(RequestError::WsError(Error::InvalidParam { message, .. })) = &res {
+            if message.contains("includestealthmodules") {
+                res = self
+                    .call_web_service(
+                        "core_course_get_contents",
+                        Some(&Params {
+                            course_id,
+                            include_stealth_modules_name: None,
+                            include_stealth_modules_value: None,
+                        }),
+                    )
+                    .await;
+            }
+        }
+
+        res
     }
 }
 
