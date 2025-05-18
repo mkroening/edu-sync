@@ -207,7 +207,7 @@ mod tests {
             serde_json::from_value(json!({
                 "errorcode": "invalidtoken",
                 "exception": "moodle_exception",
-                "message": "message"
+                "message": "message",
             }))?
         );
         Ok(())
