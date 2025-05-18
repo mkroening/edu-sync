@@ -1,6 +1,6 @@
 [package]
 name = "edu-ws-derive"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Martin Kröning <mkroening@posteo.net>"]
 edition = "2021"
 description = "Proc macros for edu-ws."
