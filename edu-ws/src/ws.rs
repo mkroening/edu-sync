@@ -1,6 +1,6 @@
 //! A client for web service requests.
 
-use std::result;
+use std::{fmt, result};
 
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_with::serde_as;
@@ -74,7 +74,7 @@ impl Client {
     async fn call_web_service<T, P>(&self, function: &str, params: Option<&P>) -> Result<T>
     where
         T: DeserializeOwned,
-        P: Serialize + Sync + ?Sized,
+        P: Serialize + Sync + fmt::Debug + ?Sized,
     {
         #[derive(Serialize)]
         struct WsQuery<'a> {
@@ -103,6 +103,7 @@ impl Client {
             lang: Option<&'a str>,
         }
 
+        debug!(function, params = tracing::field::debug(params));
         let response = self
             .http_client
             .post(self.ws_url.clone())
@@ -147,7 +148,7 @@ impl Client {
 
     pub async fn get_courses(&self, user_id: u64, return_user_count: bool) -> Result<Vec<Course>> {
         #[serde_as]
-        #[derive(Serialize)]
+        #[derive(Serialize, Debug)]
         struct Params {
             #[serde(rename = "userid")]
             user_id: u64,
@@ -168,7 +169,7 @@ impl Client {
 
     pub async fn get_contents(&self, course_id: u64) -> Result<Vec<Section>> {
         #[serde_as]
-        #[derive(Serialize)]
+        #[derive(Serialize, Debug)]
         struct Params<'a> {
             #[serde(rename = "courseid")]
             course_id: u64,
