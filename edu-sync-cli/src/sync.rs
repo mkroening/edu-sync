@@ -65,8 +65,8 @@ impl Syncer {
         let parallel_downloads = config.parallel_downloads;
         let outdated_courses = config
             .accounts
-            .into_iter()
-            .flat_map(|(_account_name, account_config)| {
+            .into_values()
+            .flat_map(|account_config| {
                 let AccountConfig {
                     path,
                     courses,
