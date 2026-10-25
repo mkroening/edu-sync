@@ -17,7 +17,7 @@ clap = { version = "4", features = ["derive"] }
 dialoguer = "0.12"
 futures-util = { version = "0.3", default-features = false, features = ["alloc"] }
 human-panic = "2"
-indicatif = "0.17"
+indicatif = "0.18"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "time"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
