@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-14, macos-13, windows-2019]
+        os: [ubuntu-22.04, macos-14, macos-15-intel, windows-2022]
     steps:
     - uses: actions/checkout@v7
     - run: gh release create ${GITHUB_REF#refs/tags/} --draft --title ${GITHUB_REF#refs/tags/v}
@@ -32,7 +32,7 @@ jobs:
 
         mkdir $DIST
 
-        if [ "${{ matrix.os }}" = windows-2019 ]; then
+        if [ "${{ matrix.os }}" = windows-2022 ]; then
           mv target/release/edu-sync-cli.exe $DIST
           7z a $DIST.zip $DIST
           echo "FILE=$DIST.zip" >> $GITHUB_ENV
