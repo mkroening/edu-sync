@@ -20,6 +20,6 @@ serde_with = "3"
 shellexpand = { version = "3", features = ["path"] }
 thiserror = "2"
 tokio = { version = "1", default-features = false, features = ["fs", "macros"] }
-toml = "0.8"
+toml = "1.0"
 tracing = "0.1"
 url = "2.2"
