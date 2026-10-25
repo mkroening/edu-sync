@@ -20,7 +20,7 @@ impl Signature {
         let mut context = md5::Context::new();
         context.consume(site_url.as_str().trim_end_matches('/'));
         context.consume(passport.to_string());
-        Self(context.compute().into())
+        Self(context.finalize().into())
     }
 }
 
