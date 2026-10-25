@@ -1,6 +1,6 @@
 [package]
 name = "edu-sync"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Martin Kröning <mkroening@posteo.net>"]
 edition = "2021"
 description = "Moodle synchronization library."
