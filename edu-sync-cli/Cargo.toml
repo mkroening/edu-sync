@@ -14,7 +14,7 @@ edu-sync = { path = "../edu-sync" }
 
 anyhow = "1.0"
 clap = { version = "4", features = ["derive"] }
-dialoguer = "0.11"
+dialoguer = "0.12"
 futures-util = { version = "0.3", default-features = false, features = ["alloc"] }
 human-panic = "2"
 indicatif = "0.17"
