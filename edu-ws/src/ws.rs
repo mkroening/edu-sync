@@ -181,8 +181,8 @@ impl Client {
 
         // moodle has introduced `includestealthmodules` in version 3.7:
         // https://tracker.moodle.org/browse/MDL-64886
-        // If the current moodle instance rejects the parameter, we try again without
-        // it.
+        // If the current moodle instance rejects the parameter, we try again
+        // without it.
         if let Err(RequestError::WsError(Error::InvalidParam {
             debuginfo: Some(debuginfo),
             ..
@@ -231,8 +231,8 @@ impl Client {
 
         // moodle has introduced `includestealthmodules` in version 3.5.3:
         // https://tracker.moodle.org/browse/MDL-63542
-        // If the current moodle instance complains rejects parameter, we try again
-        // without it.
+        // If the current moodle instance complains rejects parameter, we try
+        // again without it.
         if let Err(RequestError::WsError(Error::InvalidParam { message, .. })) = &res {
             if message.contains("includestealthmodules") {
                 res = self
