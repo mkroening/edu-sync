@@ -12,7 +12,7 @@ categories = ["api-bindings", "asynchronous", "authentication", "web-programming
 [dependencies]
 edu-ws-derive = { path = "../edu-ws-derive" }
 
-html-escape = "0.2"
+html-escape = "0.3"
 reqwest = { version = "0.12", default-features = false, features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
