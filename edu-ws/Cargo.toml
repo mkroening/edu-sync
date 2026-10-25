@@ -25,7 +25,7 @@ tracing = "0.1"
 url = { version = "2.2", features = ["serde"] }
 
 # SSO
-base64 = "0.22"
+base64 = "0.23"
 hex = { version = "0.4", features = ["serde"] }
 md5 = "0.7"
 rand = "0.9"
