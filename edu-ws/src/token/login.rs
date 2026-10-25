@@ -71,7 +71,7 @@ impl Client {
             })
             .send()
             .await?
-            .json::<UntaggedResultHelper<Response, Error>>()
+            .json::<UntaggedResultHelper<Response, Box<Error>>>()
             .await?
             .0?;
 
@@ -82,7 +82,7 @@ impl Client {
 #[derive(Error, Debug)]
 pub enum ReceiveError {
     #[error(transparent)]
-    LoginRequestError(#[from] Error),
+    LoginRequestError(#[from] Box<Error>),
     #[error(transparent)]
     HttpError(#[from] reqwest::Error),
 }

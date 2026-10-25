@@ -32,10 +32,10 @@ pub enum Exception {
 #[serde(untagged)]
 enum AjaxResult<T> {
     Ok { data: T },
-    Err { exception: Exception },
+    Err { exception: Box<Exception> },
 }
 
-impl<T> From<AjaxResult<T>> for Result<T, Exception> {
+impl<T> From<AjaxResult<T>> for Result<T, Box<Exception>> {
     fn from(res: AjaxResult<T>) -> Self {
         match res {
             AjaxResult::Ok { data } => Ok(data),
@@ -65,7 +65,7 @@ impl Client {
     async fn call_ajax<T>(
         &self,
         requests: &[Request<'_>],
-    ) -> Result<Vec<Result<T, Exception>>, ReceiveError>
+    ) -> Result<Vec<Result<T, Box<Exception>>>, ReceiveError>
     where
         T: DeserializeOwned,
     {
@@ -115,7 +115,7 @@ pub enum Error {
     #[error(transparent)]
     ReceiveError(#[from] ReceiveError),
     #[error(transparent)]
-    Exception(#[from] Exception),
+    Exception(#[from] Box<Exception>),
 }
 
 #[derive(Error, Debug)]
@@ -136,11 +136,11 @@ mod tests {
     fn test_ajax_result_deserialization() -> serde_json::Result<()> {
         assert_eq!(
             AjaxResult::Err::<()> {
-                exception: Exception::InvalidParameter {
+                exception: Box::new(Exception::InvalidParameter {
                     message: "message".to_string(),
                     url: "https://example.com".parse().unwrap(),
                     info_url: "https://example.com/info".parse().unwrap(),
-                }
+                })
             },
             serde_json::from_value(json!({
                 "error": true,
